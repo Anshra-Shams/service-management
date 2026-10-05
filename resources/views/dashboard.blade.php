@@ -23,7 +23,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500 mb-1">Total Customers</p>
-                        <h4 class="text-2xl font-bold text-gray-800">120</h4>
+                        <h4 class="text-2xl font-bold text-gray-800">{{ $totalCustomers }}</h4>
                     </div>
                 </div>
 
@@ -34,7 +34,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500 mb-1">Active Services</p>
-                        <h4 class="text-2xl font-bold text-gray-800">15</h4>
+                        <h4 class="text-2xl font-bold text-gray-800">{{ $totalServices }}</h4>
                     </div>
                 </div>
 
@@ -45,7 +45,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-gray-500 mb-1">Generated Bills</p>
-                        <h4 class="text-2xl font-bold text-gray-800">342</h4>
+                        <h4 class="text-2xl font-bold text-gray-800">{{ $totalBills }}</h4>
                     </div>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                         <a href="{{ route('customer') }}" class="block w-full text-center py-3 px-4 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 font-medium transition-colors">
                             + Add New Customer
                         </a>
-                        <a href="{{ route('create-bill') }}" class="block w-full text-center py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm shadow-blue-200">
+                        <a href="{{ route('add-bill') }}" class="block w-full text-center py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors shadow-sm shadow-blue-200">
                             Create New Bill
                         </a>
                     </div>
@@ -70,7 +70,7 @@
                 <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="text-lg font-bold text-gray-800">Recent Bills</h3>
-                        <a href="#" class="text-sm text-blue-600 hover:underline">View All</a>
+                        <a href="{{ route('create-bill') }}" class="text-sm text-blue-600 hover:underline">View All</a>
                     </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
@@ -79,28 +79,22 @@
                                     <th class="pb-3 font-medium">Bill #</th>
                                     <th class="pb-3 font-medium">Customer</th>
                                     <th class="pb-3 font-medium">Amount</th>
-                                    <th class="pb-3 font-medium">Status</th>
+                                    <th class="pb-3 font-medium">Date</th>
                                 </tr>
                             </thead>
                             <tbody class="text-sm text-gray-700">
+                                @forelse($recentBills as $bill)
                                 <tr class="border-b border-gray-50 hover:bg-gray-50">
-                                    <td class="py-3 font-medium">#INV-001</td>
-                                    <td class="py-3">Ali Khan</td>
-                                    <td class="py-3 font-medium text-gray-900">Rs 5,000</td>
-                                    <td class="py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Paid</span></td>
+                                    <td class="py-3 font-medium">#INV-{{ str_pad($bill->id, 3, '0', STR_PAD_LEFT) }}</td>
+                                    <td class="py-3">{{ $bill->customer->name ?? 'N/A' }}</td>
+                                    <td class="py-3 font-medium text-gray-900">Rs {{ number_format($bill->amount) }}</td>
+                                    <td class="py-3">{{ \Carbon\Carbon::parse($bill->service_date)->format('d M, Y') }}</td>
                                 </tr>
-                                <tr class="border-b border-gray-50 hover:bg-gray-50">
-                                    <td class="py-3 font-medium">#INV-002</td>
-                                    <td class="py-3">Hassan Ahmed</td>
-                                    <td class="py-3 font-medium text-gray-900">Rs 12,500</td>
-                                    <td class="py-3"><span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Pending</span></td>
+                                @empty
+                                <tr>
+                                    <td colspan="4" class="py-4 text-center text-gray-500">No recent bills found.</td>
                                 </tr>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-3 font-medium">#INV-003</td>
-                                    <td class="py-3">Sara Ali</td>
-                                    <td class="py-3 font-medium text-gray-900">Rs 3,200</td>
-                                    <td class="py-3"><span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Paid</span></td>
-                                </tr>
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

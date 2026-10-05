@@ -120,7 +120,7 @@
                     <form action="{{ route('generate-bill') }}" method="POST">
                         @csrf
                         
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
                                 <select name="customer_id" class="searchable-select w-full" data-placeholder="Select a customer..." required>
@@ -132,11 +132,11 @@
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                                <input type="text" name="category" placeholder="Enter category..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3" required>
+                                <input type="text" name="category" placeholder="Enter category..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                                <input type="text" name="type" placeholder="Enter type..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3" required>
+                                <input type="text" name="type" placeholder="Enter type..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Issue Date</label>

@@ -122,7 +122,7 @@
         
         $sector = '';
         $streetNo = '';
-        $phase = 'II';
+        $phase = '';
         
         $category = $invoice->category ?? '';
         $type = $invoice->type ?? 'Residential';
@@ -489,7 +489,7 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 10mm;
+                margin: 0;
             }
             body, html {
                 background: #ffffff !important;
@@ -515,10 +515,10 @@
             }
             .ga-sheet {
                 position: absolute;
-                left: 0;
-                top: 0;
-                width: 100% !important;
-                max-width: 100% !important;
+                left: 10mm;
+                top: 10mm;
+                width: calc(100% - 20mm) !important;
+                max-width: none !important;
                 margin: 0 !important;
                 border: 1.5px solid #000000 !important;
                 box-shadow: none !important;

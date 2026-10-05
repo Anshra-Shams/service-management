@@ -80,6 +80,11 @@
                                 </tbody>
                             </table>
                         </div>
+                        @if($customers->hasPages())
+                            <div class="px-6 py-4 border-t border-gray-100">
+                                {{ $customers->links() }}
+                            </div>
+                        @endif
                     @else
                         <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">
                             <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>

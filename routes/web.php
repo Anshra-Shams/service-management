@@ -23,7 +23,11 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $totalCustomers = \App\Models\Customer::count();
+    $totalServices = \App\Models\Service::count();
+    $totalBills = \App\Models\Invoice::count();
+    $recentBills = \App\Models\Invoice::with('customer')->latest()->take(5)->get();
+    return view('dashboard', compact('totalCustomers', 'totalServices', 'totalBills', 'recentBills'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
@@ -164,7 +168,9 @@ Route::middleware('auth')->group(function () {
             'service_id' => $serviceIds[0] ?? null,
             'service_date' => $request->service_date,
             'due_date' => $request->due_date,
-            'amount' => $request->amount
+            'amount' => $request->amount,
+            'category' => $request->category,
+            'type' => $request->type
         ]);
 
         $serviceRecords = [];
