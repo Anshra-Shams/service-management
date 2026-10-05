@@ -1,0 +1,4 @@
+2026/10/03-21:55:15.816 4974 Creating DB C:\xampp\htdocs\service-management\whatsapp-server\.wwebjs_auth\session\Default\Extension Rules since it was missing.
+2026/10/03-21:55:15.825 4974 Reusing MANIFEST C:\xampp\htdocs\service-management\whatsapp-server\.wwebjs_auth\session\Default\Extension Rules/MANIFEST-000001
+2026/10/03-21:55:15.826 4974 Recovering log #3
+2026/10/03-21:55:15.826 4974 Reusing old log C:\xampp\htdocs\service-management\whatsapp-server\.wwebjs_auth\session\Default\Extension Rules/000003.log 
