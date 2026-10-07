@@ -90,8 +90,8 @@
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95"
-                             style="display: none;" 
-                             class="absolute top-full mt-1 left-0 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-50">
+                             style="display: none; top: 60px;" 
+                             class="absolute left-0 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-50">
                             
                              <a href="{{ route('receipt') }}" class="flex items-center gap-4 px-6 py-3 text-[15px] font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors whitespace-nowrap">
                                 <!-- List Icon -->

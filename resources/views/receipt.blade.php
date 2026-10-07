@@ -44,7 +44,7 @@
                     </div>
 
                     <!-- Filters -->
-                    <form method="GET" action="{{ route('receipt') }}" class="flex flex-wrap items-end gap-3 mb-6">
+                    <form method="GET" action="{{ route('receipt') }}" style="align-items: flex-end;" class="flex flex-wrap gap-3 mb-6">
                         <div>
                             <label class="block text-xs font-semibold text-gray-500 mb-1">Search</label>
                             <input type="text" name="search" value="{{ request('search') }}" placeholder="Receipt #, customer, ref no" class="px-3 py-2 rounded-lg border border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
@@ -57,9 +57,9 @@
                             <label class="block text-xs font-semibold text-gray-500 mb-1">To</label>
                             <input type="date" name="to_date" value="{{ request('to_date') }}" class="px-3 py-2 rounded-lg border border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
                         </div>
-                        <button type="submit" class="px-4 py-1.5 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-900">Filter</button>
+                        <button type="submit" style="height: 38px;" class="px-4 bg-gray-800 text-white rounded-lg text-sm font-medium hover:bg-gray-900">Filter</button>
                         @if(request()->hasAny(['search', 'from_date', 'to_date']))
-                            <a href="{{ route('receipt') }}" class="px-4 py-1.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center">Reset</a>
+                            <a href="{{ route('receipt') }}" style="height: 38px;" class="px-4 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 flex items-center justify-center">Reset</a>
                         @endif
                     </form>
 
