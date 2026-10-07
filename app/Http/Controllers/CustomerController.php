@@ -56,4 +56,10 @@ class CustomerController extends Controller
         $customer->delete();
         return redirect()->back()->with('success', 'Customer deleted successfully!');
     }
+
+    public function ledger()
+    {
+        $customers = Customer::latest()->get();
+        return view('customer-ledger', compact('customers'));
+    }
 }

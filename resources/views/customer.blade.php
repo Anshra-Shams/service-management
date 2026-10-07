@@ -25,9 +25,14 @@
                     
                     <div class="flex justify-between items-center mb-6">
                         <h3 class="text-xl font-bold text-gray-800">Customer List</h3>
-                        <button @click="showModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors">
-                            + Add New Customer
-                        </button>
+                        <div class="flex gap-2">
+                            <a href="{{ route('customer.ledger') }}" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+                                Ledger
+                            </a>
+                            <button @click="showModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors">
+                                + Add New Customer
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Customer Table -->

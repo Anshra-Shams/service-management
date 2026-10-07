@@ -73,6 +73,40 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         {{ __('Vouchers / Bills') }}
                     </x-nav-link>
+
+                    <div class="relative flex h-full" x-data="{ open: false }" @mouseenter="open = true" @mouseleave="open = false">
+                        <div class="inline-flex items-center px-1 pt-1 border-b-2 {{ request()->routeIs('receipt*') ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-600 hover:text-blue-600 hover:border-gray-300' }} text-sm font-medium leading-5 transition duration-150 ease-in-out cursor-pointer flex items-center gap-2 h-full">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <span>Voucher/Report</span>
+                            <!-- Down Arrow -->
+                            <svg class="w-4 h-4 ml-1 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+
+                        <!-- Dropdown Menu -->
+                        <div x-show="open" 
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             style="display: none;" 
+                             class="absolute top-full mt-1 left-0 w-56 bg-white rounded-lg shadow-xl py-2 z-50 border border-gray-50">
+                            
+                             <a href="{{ route('receipt') }}" class="flex items-center gap-4 px-6 py-3 text-[15px] font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors whitespace-nowrap">
+                                <!-- List Icon -->
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+                                <span>Receipt Voucher</span>
+                            </a>
+
+                            <a href="{{ route('receipt.report') }}" class="flex items-center gap-4 px-6 py-3 text-[15px] font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors whitespace-nowrap">
+                                <!-- Chart/Report Icon -->
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                <span>Reports</span>
+                            </a>
+                            
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -92,6 +126,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('create-bill')" :active="request()->routeIs('create-bill')">
                 {{ __('Create Bill') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('receipt')" :active="request()->routeIs('receipt*')">
+                {{ __('Receipt Vouchers') }}
             </x-responsive-nav-link>
         </div>
     </div>

@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
     Route::get('/customer', [\App\Http\Controllers\CustomerController::class, 'index'])->name('customer');
+    Route::get('/customer/ledger', [\App\Http\Controllers\CustomerController::class, 'ledger'])->name('customer.ledger');
     Route::post('/customer', [\App\Http\Controllers\CustomerController::class, 'store'])->name('customer.store');
     Route::put('/customer/{customer}', [\App\Http\Controllers\CustomerController::class, 'update'])->name('customer.update');
     Route::delete('/customer/{customer}', [\App\Http\Controllers\CustomerController::class, 'destroy'])->name('customer.destroy');
@@ -43,6 +44,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/service', [\App\Http\Controllers\ServiceController::class, 'store'])->name('service.store');
     Route::put('/service/{service}', [\App\Http\Controllers\ServiceController::class, 'update'])->name('service.update');
     Route::delete('/service/{service}', [\App\Http\Controllers\ServiceController::class, 'destroy'])->name('service.destroy');
+
+    Route::get('/receipt', [\App\Http\Controllers\ReceiptController::class, 'index'])->name('receipt');
+    Route::get('/receipt/report', [\App\Http\Controllers\ReceiptController::class, 'report'])->name('receipt.report');
+    Route::post('/receipt', [\App\Http\Controllers\ReceiptController::class, 'store'])->name('receipt.store');
+    Route::get('/receipt/{receipt}', [\App\Http\Controllers\ReceiptController::class, 'show'])->name('receipt.show');
+    Route::put('/receipt/{receipt}', [\App\Http\Controllers\ReceiptController::class, 'update'])->name('receipt.update');
+    Route::delete('/receipt/{receipt}', [\App\Http\Controllers\ReceiptController::class, 'destroy'])->name('receipt.destroy');
     Route::get('/create-bill', function (Illuminate\Http\Request $request) {
         $customers = \App\Models\Customer::all();
         $services = \App\Models\Service::all();

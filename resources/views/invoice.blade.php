@@ -125,7 +125,7 @@
         $phase = '';
         
         $category = $invoice->category ?? '';
-        $type = $invoice->type ?? 'Residential';
+        $type = $invoice->type ?? '';
 
         if (preg_match('/(plot|house|h\.no|p\.no)\s*[:#\-]?\s*([a-zA-Z0-9\-\/]+)/i', $rawAddress, $m)) {
             $plotNo = $m[2];
