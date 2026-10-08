@@ -104,8 +104,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        @if($receipts->hasPages())
-                            <div class="px-6 py-4 border-t border-gray-100">{{ $receipts->links() }}</div>
+                        @if($receipts->hasPages() || $receipts->total() > 0)
+                            <x-pagination :items="$receipts" />
                         @endif
                     @else
                         <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">

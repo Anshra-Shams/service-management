@@ -7,9 +7,19 @@ use App\Models\Customer;
 
 class CustomerController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $customers = Customer::latest()->paginate(10);
+        $query = Customer::latest();
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%")
+                  ->orWhere('contact_number', 'like', "%{$search}%");
+        }
+        
+        $perPage = $request->input('per_page', 10);
+        $customers = $query->paginate($perPage)->appends($request->query());
         return view('customer', compact('customers'));
     }
 
@@ -57,9 +67,19 @@ class CustomerController extends Controller
         return redirect()->back()->with('success', 'Customer deleted successfully!');
     }
 
-    public function ledger()
+    public function ledger(Request $request)
     {
-        $customers = Customer::latest()->get();
+        $query = Customer::latest();
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%")
+                  ->orWhere('contact_number', 'like', "%{$search}%");
+        }
+        
+        $perPage = $request->input('per_page', 10);
+        $customers = $query->paginate($perPage)->appends($request->query());
         return view('customer-ledger', compact('customers'));
     }
 }

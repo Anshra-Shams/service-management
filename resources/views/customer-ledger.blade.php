@@ -9,6 +9,15 @@
                     </a>
                     <h2 class="text-2xl font-bold text-gray-800">Customer Ledger</h2>
                 </div>
+                
+                <form action="{{ route('customer.ledger') }}" method="GET" class="flex items-center">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                        <input type="text" name="search" value="{{ request('search') }}" oninput="clearTimeout(this.timer); this.timer = setTimeout(() => this.form.submit(), 600)" placeholder="Search customer..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64 shadow-sm">
+                    </div>
+                </form>
             </div>
 
             <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100">
@@ -39,13 +48,13 @@
                                 @foreach($customers as $customer)
                                 <tr class="hover:bg-gray-50/50 transition-colors {{ $loop->even ? 'bg-gray-100/50' : 'bg-white' }}">
                                     <td class="px-6 py-4">
-                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded bg-emerald-600 text-white text-xs font-bold">
+                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold" style="background-color: #059669; color: white;">
                                             {{ $customer->id }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4">
                                         <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-sm mr-3">
+                                            <div class="h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm mr-3" style="background-color: #059669; color: white;">
                                                 {{ strtoupper(substr($customer->name, 0, 1)) }}
                                             </div>
                                             <span class="font-medium text-gray-700">{{ $customer->name }}</span>
@@ -61,9 +70,16 @@
                                     </td>
                                 </tr>
                                 @endforeach
+                                @if($customers->isEmpty())
+                                <tr>
+                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium">
+                                        No customers found.
+                                    </td>
+                                </tr>
+                                @endif
                             </tbody>
                         </table>
-                    </div>
+                    <x-pagination :items="$customers" />
                 </div>
             </div>
         </div>

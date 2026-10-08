@@ -23,11 +23,21 @@
             <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100">
                 <div class="p-8 text-gray-900">
                     
-                    <div class="flex justify-between items-center mb-6">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
                         <h3 class="text-xl font-bold text-gray-800">Available Services</h3>
-                        <button @click="showModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors">
-                            + Add New Service
-                        </button>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <form action="{{ route('service') }}" method="GET" style="display: flex; align-items: center; margin: 0;">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                    </div>
+                                    <input type="text" name="search" value="{{ request('search') }}" oninput="clearTimeout(this.timer); this.timer = setTimeout(() => this.form.submit(), 600)" placeholder="Search..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-48 shadow-sm">
+                                </div>
+                            </form>
+                            <button @click="showModal = true" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow-sm transition-colors whitespace-nowrap">
+                                + Add New Service
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Service Table -->
@@ -67,10 +77,8 @@
                                 </tbody>
                             </table>
                         </div>
-                        @if($services->hasPages())
-                            <div class="px-6 py-4 border-t border-gray-100">
-                                {{ $services->links() }}
-                            </div>
+                        @if($services->hasPages() || $services->total() > 0)
+                            <x-pagination :items="$services" />
                         @endif
                     @else
                         <div class="text-center py-12 text-gray-500 border-2 border-dashed border-gray-200 rounded-lg">

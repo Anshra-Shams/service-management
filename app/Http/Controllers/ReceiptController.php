@@ -33,7 +33,8 @@ class ReceiptController extends Controller
         }
 
         $totalReceived = (clone $query)->sum('amount');
-        $receipts = $query->latest()->paginate(10)->withQueryString();
+        $perPage = $request->input('per_page', 10);
+        $receipts = $query->latest()->paginate($perPage)->appends($request->query());
         $customers = Customer::orderBy('name')->get();
         $invoices = Invoice::select('id', 'customer_id', 'amount', 'service_date')->latest()->get();
 

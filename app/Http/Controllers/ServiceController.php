@@ -7,9 +7,18 @@ use Illuminate\Http\Request;
 
 class ServiceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $services = Service::latest()->paginate(10);
+        $query = Service::latest();
+        
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where('name', 'like', "%{$search}%")
+                  ->orWhere('id', 'like', "%{$search}%");
+        }
+
+        $perPage = $request->input('per_page', 10);
+        $services = $query->paginate($perPage)->appends($request->query());
         return view('service', compact('services'));
     }
 

@@ -237,11 +237,10 @@
                     </table>
                 </div>
                 
-                @if($invoices->hasPages())
-                    <div class="px-6 py-4 border-t border-gray-100">
-                        {{ $invoices->withQueryString()->links() }}
-                    </div>
+                @if($invoices->hasPages() || $invoices->total() > 0)
+                    <x-pagination :items="$invoices" />
                 @endif
+
             </div>
         </div>
     </div>

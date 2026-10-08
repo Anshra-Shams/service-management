@@ -81,7 +81,8 @@ Route::middleware('auth')->group(function () {
             $query->whereDate('service_date', '<=', $request->to_date);
         }
         
-        $invoices = $query->latest()->paginate(10);
+        $perPage = $request->input('per_page', 10);
+        $invoices = $query->latest()->paginate($perPage)->appends($request->query());
         
         return view('create-bill', compact('customers', 'services', 'invoices'));
     })->name('create-bill');
