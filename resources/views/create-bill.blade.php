@@ -129,7 +129,7 @@
                                 <label class="text-sm font-medium text-gray-600">From:</label>
                                 <input type="date" name="from_date" value="{{ request('from_date') }}" class="border-gray-200 rounded-lg shadow-sm text-sm py-1.5 focus:border-blue-500 focus:ring-blue-500">
                             </div>
-                            <button type="submit" class="font-medium text-sm transition-all shadow-sm" style="background-color: #059669; color: white; padding: 0.375rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;">
+                            <button type="submit" class="font-medium text-sm transition-all shadow-sm" style="background-color: black; color: white; padding: 0.375rem 1rem; border-radius: 0.5rem; border: none; cursor: pointer;">
                                 Filter
                             </button>
                             @if(request()->hasAny(['search', 'from_date', 'to_date']))

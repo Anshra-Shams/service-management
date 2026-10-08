@@ -43,8 +43,16 @@ class ReceiptController extends Controller
 
     public function report(Request $request)
     {
-        $receipts = Receipt::with(['customer', 'invoice.services'])->orderBy('receipt_date', 'desc')->get();
-        return view('receipt-report', compact('receipts'));
+        $query = Receipt::with(['customer', 'invoice.services'])->orderBy('receipt_date', 'desc');
+        
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
+        }
+        
+        $receipts = $query->get();
+        $customers = Customer::orderBy('name')->get();
+        
+        return view('receipt-report', compact('receipts', 'customers'));
     }
 
     public function store(Request $request)
