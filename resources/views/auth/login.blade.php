@@ -139,17 +139,7 @@
                     </button>
                 </div>
 
-                <!-- Optional Registration Link -->
-                @if (Route::has('register'))
-                    <div class="pt-1 text-center">
-                        <p class="text-xs text-slate-500">
-                            Need an admin account?
-                            <a href="{{ route('register') }}" class="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
-                                Register here
-                            </a>
-                        </p>
-                    </div>
-                @endif
+
             </form>
 
             <!-- Bottom Security Info -->

@@ -43,16 +43,20 @@ class ReceiptController extends Controller
 
     public function report(Request $request)
     {
-        $query = Receipt::with(['customer', 'invoice.services'])->orderBy('receipt_date', 'desc');
+        $query = Customer::with(['receipts', 'invoices.services'])->orderBy('name');
         
         if ($request->filled('customer_id')) {
-            $query->where('customer_id', $request->customer_id);
+            $query->where('id', $request->customer_id);
+        } else {
+            // Only show customers that have at least one receipt
+            $query->whereHas('receipts');
         }
         
-        $receipts = $query->get();
+        $perPage = $request->input('per_page', 10);
+        $reportCustomers = $query->paginate($perPage)->appends($request->query());
         $customers = Customer::orderBy('name')->get();
         
-        return view('receipt-report', compact('receipts', 'customers'));
+        return view('receipt-report', compact('reportCustomers', 'customers'));
     }
 
     public function store(Request $request)
