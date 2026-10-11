@@ -46,22 +46,23 @@
                     <!-- Customer Table -->
                     @if(isset($customers) && $customers->count() > 0)
                         <div class="overflow-x-auto rounded-lg border border-gray-200">
-                            <table class="w-full text-left border-collapse bg-white">
+                            <table class="w-full text-left border-collapse bg-white border border-gray-200">
                                 <thead>
-                                    <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50/50">
-                                        <th class="px-6 py-4">ID</th>
-                                        <th class="px-6 py-4">Customer Info</th>
-                                        <th class="px-6 py-4">Contact</th>
-                                        <th class="px-6 py-4">Address</th>
-                                        <th class="px-6 py-4 text-right">Opening Balance</th>
-                                        <th class="px-6 py-4 text-center">Action</th>
+                                    <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/50">
+                                        <th class="px-6 py-4 border border-gray-200">ID</th>
+                                        <th class="px-6 py-4 border border-gray-200">Customer Info</th>
+                                        <th class="px-6 py-4 border border-gray-200">Contact</th>
+                                        <th class="px-6 py-4 border border-gray-200">Address</th>
+                                        <th class="px-6 py-4 text-right border border-gray-200">Opening Balance</th>
+                                        <th class="px-6 py-4 text-center border border-gray-200">Start Date</th>
+                                        <th class="px-6 py-4 text-center border border-gray-200">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
+                                <tbody class="text-sm text-gray-700">
                                     @foreach($customers as $customer)
                                     <tr class="hover:bg-blue-50/30 transition-colors">
-                                        <td class="px-6 py-4 text-gray-500 font-medium">#{{ str_pad($customer->id, 4, '0', STR_PAD_LEFT) }}</td>
-                                        <td class="px-6 py-4">
+                                        <td class="px-6 py-4 text-gray-500 font-medium border border-gray-200">#{{ str_pad($customer->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                        <td class="px-6 py-4 border border-gray-200">
                                             <div class="flex items-center">
                                                 <div class="h-9 w-9 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm mr-3">
                                                     {{ substr($customer->name, 0, 1) }}
@@ -69,12 +70,15 @@
                                                 <span class="font-semibold text-gray-900">{{ $customer->name }}</span>
                                             </div>
                                         </td>
-                                        <td class="px-6 py-4 text-gray-600">{{ $customer->contact_number ?: 'N/A' }}</td>
-                                        <td class="px-6 py-4 text-gray-500 truncate max-w-[200px]" title="{{ $customer->address }}">{{ $customer->address ?: 'N/A' }}</td>
-                                        <td class="px-6 py-4 font-bold text-right text-gray-900">
+                                        <td class="px-6 py-4 text-gray-600 border border-gray-200">{{ $customer->contact_number ?: 'N/A' }}</td>
+                                        <td class="px-6 py-4 text-gray-500 truncate max-w-[200px] border border-gray-200" title="{{ $customer->address }}">{{ $customer->address ?: 'N/A' }}</td>
+                                        <td class="px-6 py-4 font-bold text-right text-gray-900 border border-gray-200">
                                             Rs {{ number_format($customer->opening_balance, 2) }}
                                         </td>
-                                        <td class="px-6 py-4 text-center">
+                                        <td class="px-6 py-4 text-center text-gray-600 whitespace-nowrap border border-gray-200">
+                                            {{ $customer->start_date ? \Carbon\Carbon::parse($customer->start_date)->format('d M, Y') : 'N/A' }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center border border-gray-200">
                                             <div class="flex justify-center gap-2">
                                                 <button @click="editData = {{ $customer }}; showEditModal = true" class="text-blue-500 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition" title="Edit">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -164,15 +168,23 @@
                                         @error('address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
 
-                                    <div class="mb-8">
-                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Opening Balance</label>
-                                        <div class="relative">
-                                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                                <span class="text-gray-500 font-medium sm:text-sm">Rs</span>
+                                    <div class="grid grid-cols-2 gap-4 mb-8" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Opening Balance</label>
+                                            <div class="relative">
+                                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                                    <span class="text-gray-500 font-medium sm:text-sm">Rs</span>
+                                                </div>
+                                                <input type="number" step="0.01" name="opening_balance" value="{{ old('opening_balance', '0.00') }}" placeholder="0.00" class="w-full px-4 py-2.5 pl-10 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-colors" style="height: 42px;">
                                             </div>
-                                            <input type="number" step="0.01" name="opening_balance" value="0.00" placeholder="0.00" class="w-full px-4 py-2.5 pl-10 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-colors">
+                                            @error('opening_balance') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                         </div>
-                                        @error('opening_balance') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Start Date</label>
+                                            <input type="date" name="start_date" value="{{ old('start_date', date('Y-m-d')) }}" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-colors" style="height: 42px;">
+                                            @error('start_date') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
                                     </div>
 
                                     <div class="flex justify-end gap-3 mt-5 sm:mt-4">
@@ -244,13 +256,20 @@
                                         <textarea name="address" rows="3" x-model="editData.address" placeholder="(Plot/House, Sector, Street No, Phase)" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-colors"></textarea>
                                     </div>
 
-                                    <div class="mb-8">
-                                        <label class="block text-sm font-semibold text-gray-700 mb-1.5">Opening Balance</label>
-                                        <div class="relative">
-                                            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                                                <span class="text-gray-500 font-medium sm:text-sm">Rs</span>
+                                    <div class="grid grid-cols-2 gap-4 mb-8" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Opening Balance</label>
+                                            <div class="relative">
+                                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
+                                                    <span class="text-gray-500 font-medium sm:text-sm">Rs</span>
+                                                </div>
+                                                <input type="number" step="0.01" name="opening_balance" x-model="editData.opening_balance" placeholder="0.00" class="w-full px-4 py-2.5 pl-10 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-colors" style="height: 42px;">
                                             </div>
-                                            <input type="number" step="0.01" name="opening_balance" x-model="editData.opening_balance" placeholder="0.00" class="w-full px-4 py-2.5 pl-10 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-colors">
+                                        </div>
+
+                                        <div>
+                                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Start Date</label>
+                                            <input type="date" name="start_date" x-model="editData.start_date" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm transition-colors" style="height: 42px;">
                                         </div>
                                     </div>
 

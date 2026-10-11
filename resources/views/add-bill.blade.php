@@ -120,7 +120,7 @@
                     <form action="{{ route('generate-bill') }}" method="POST">
                         @csrf
                         
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
+                        <div class="grid gap-4 mb-6" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
                                 <select name="customer_id" class="searchable-select w-full" data-placeholder="Select a customer..." required>
@@ -129,10 +129,6 @@
                                         <option value="{{ $customer->id }}">{{ $customer->name }} - (Balance: Rs. {{ number_format($customer->opening_balance, 2) }})</option>
                                     @endforeach
                                 </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                                <input type="text" name="category" placeholder="Enter category..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
@@ -175,7 +171,8 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 30%; min-width: 250px;">Service Rendered</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 20%; min-width: 150px;">Category</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%; min-width: 100px;">Plot Size</th>
                                         <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Monthly Charges</th>
                                         <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Arrears</th>
                                         <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Late Surcharge</th>
@@ -187,11 +184,16 @@
                                 <tbody class="bg-white divide-y divide-gray-200" id="invoice_tbody">
                                     <tr class="invoice-row">
                                         <td class="px-4 py-3">
-                                            <select name="service_ids[]" class="service-select w-full" data-placeholder="Select service..." required>
+                                            <select name="service_ids[]" class="service-select w-full" data-placeholder="Select category..." required>
                                                 <option value=""></option>
                                                 @foreach($services as $service)
-                                                    <option value="{{ $service->id }}" data-amount="{{ $service->amount ?? 0 }}">{{ $service->name }}</option>
+                                                    <option value="{{ $service->id }}" data-amount="{{ $service->amount ?? 0 }}" data-details="{{ json_encode($service->details ?? []) }}">{{ $service->name }}</option>
                                                 @endforeach
+                                            </select>
+                                        </td>
+                                        <td class="px-4 py-3">
+                                            <select name="marla[]" class="marla-select w-full" data-placeholder="Select marla...">
+                                                <option value=""></option>
                                             </select>
                                         </td>
                                         <td class="px-4 py-3">
@@ -220,7 +222,7 @@
                                 </tbody>
                                 <tfoot class="bg-gray-100 font-semibold text-gray-800 border-t border-gray-200">
                                     <tr>
-                                        <td class="px-4 py-3 text-right">GRID TOTAL:</td>
+                                        <td class="px-4 py-3 text-right" colspan="2">GRID TOTAL:</td>
                                         <td class="px-4 py-3">Rs. <span id="grid_total_monthly">0.00</span></td>
                                         <td class="px-4 py-3"></td>
                                         <td class="px-4 py-3"></td>
@@ -267,6 +269,46 @@
             });
             $('.service-select').each(function() {
                 initSelect2($(this));
+            });
+            $('.marla-select').each(function() {
+                initSelect2($(this));
+            });
+
+            $(document).on('change', '.service-select', function() {
+                let row = $(this).closest('tr');
+                let selectedOption = $(this).find('option:selected');
+                let detailsStr = selectedOption.attr('data-details');
+                let defaultAmount = parseFloat(selectedOption.attr('data-amount')) || 0;
+                
+                let details = [];
+                try {
+                    details = JSON.parse(detailsStr);
+                } catch(e) {}
+                
+                let marlaSelect = row.find('.marla-select');
+                marlaSelect.empty();
+                marlaSelect.append('<option value=""></option>');
+                
+                if (details && details.length > 0) {
+                    details.forEach(function(item) {
+                        marlaSelect.append('<option value="' + item.marla + '" data-amount="' + item.amount + '">' + item.marla + '</option>');
+                    });
+                    row.find('.monthly-charges').val('').trigger('input');
+                } else {
+                    row.find('.monthly-charges').val(defaultAmount.toFixed(2)).trigger('input');
+                }
+            });
+
+            $(document).on('change', '.marla-select', function() {
+                let row = $(this).closest('tr');
+                let selectedOption = $(this).find('option:selected');
+                let amount = parseFloat(selectedOption.attr('data-amount')) || 0;
+                
+                if ($(this).val()) {
+                    row.find('.monthly-charges').val(amount.toFixed(2)).trigger('input');
+                } else {
+                    row.find('.monthly-charges').val('').trigger('input');
+                }
             });
 
             function setDueDateFromIssue(issueVal) {
@@ -348,6 +390,7 @@
                 
                 $('#invoice_tbody').append(newRow);
                 initSelect2(newRow.find('.service-select'));
+                initSelect2(newRow.find('.marla-select'));
             });
 
             // Prevent form submit on Enter and add new row instead if inside table

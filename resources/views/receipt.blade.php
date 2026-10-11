@@ -65,24 +65,24 @@
 
                     @if($receipts->count() > 0)
                         <div class="overflow-x-auto rounded-lg border border-gray-200">
-                            <table class="w-full text-left border-collapse bg-white">
+                            <table class="w-full text-left border-collapse bg-white border border-gray-200">
                                 <thead>
-                                    <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50/50">
-                                        <th class="px-6 py-4">Receipt #</th>
-                                        <th class="px-6 py-4">Date</th>
-                                        <th class="px-6 py-4">Customer</th>
-                                        <th class="px-6 py-4 text-right">Amount</th>
-                                        <th class="px-6 py-4 text-center">Action</th>
+                                    <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider bg-gray-50/50">
+                                        <th class="px-6 py-4 border border-gray-200">Receipt #</th>
+                                        <th class="px-6 py-4 border border-gray-200">Date</th>
+                                        <th class="px-6 py-4 border border-gray-200">Customer</th>
+                                        <th class="px-6 py-4 border border-gray-200 text-right">Amount</th>
+                                        <th class="px-6 py-4 border border-gray-200 text-center">Action</th>
                                     </tr>
                                 </thead>
-                                <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
+                                <tbody class="text-sm text-gray-700">
                                     @foreach($receipts as $receipt)
                                     <tr class="hover:bg-blue-50/30 transition-colors">
-                                        <td class="px-6 py-4 text-gray-500 font-medium">RV-{{ str_pad($receipt->id, 4, '0', STR_PAD_LEFT) }}</td>
-                                        <td class="px-6 py-4">{{ \Carbon\Carbon::parse($receipt->receipt_date)->format('d M Y') }}</td>
-                                        <td class="px-6 py-4 font-semibold text-gray-900">{{ $receipt->customer->name ?? '-' }}</td>
-                                        <td class="px-6 py-4 text-right font-semibold text-green-600">Rs. {{ number_format($receipt->amount, 2) }}</td>
-                                        <td class="px-6 py-4 text-center">
+                                        <td class="px-6 py-4 border border-gray-200 text-gray-500 font-medium">RV-{{ str_pad($receipt->id, 4, '0', STR_PAD_LEFT) }}</td>
+                                        <td class="px-6 py-4 border border-gray-200">{{ \Carbon\Carbon::parse($receipt->receipt_date)->format('d M Y') }}</td>
+                                        <td class="px-6 py-4 border border-gray-200 font-semibold text-gray-900">{{ $receipt->customer->name ?? '-' }}</td>
+                                        <td class="px-6 py-4 border border-gray-200 text-right font-semibold text-green-600">Rs. {{ number_format($receipt->amount, 2) }}</td>
+                                        <td class="px-6 py-4 border border-gray-200 text-center">
                                             <div class="flex justify-center gap-2">
                                                 <a href="{{ route('receipt.show', $receipt->id) }}" class="text-gray-500 hover:text-gray-700 p-1 rounded hover:bg-gray-100" title="View / Print">
                                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
@@ -93,7 +93,7 @@
                                                 <form id="delete-receipt-{{ $receipt->id }}" action="{{ route('receipt.destroy', $receipt->id) }}" method="POST" class="inline-block">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="button" onclick="confirmDelete('{{ $receipt->id }}')" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50" title="Delete">
+                                                    <button type="button" onclick="confirmDelete('delete-receipt-{{ $receipt->id }}', 'this receipt voucher')" class="text-red-500 hover:text-red-700 p-1 rounded hover:bg-red-50" title="Delete">
                                                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                                     </button>
                                                 </form>

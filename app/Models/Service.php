@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
     use HasFactory;
-    protected $fillable = ['name', 'amount'];
+    protected $fillable = ['name', 'amount', 'marla', 'details'];
+    
+    protected $casts = [
+        'details' => 'array',
+    ];
 
     public function invoices()
     {

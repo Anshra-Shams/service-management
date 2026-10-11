@@ -121,17 +121,54 @@
                                             
                                             $totalWaterArrears = 0;
                                             $totalPayableWater = 0;
-                                            $bungalowDate = '-';
+                                            $bungalowDate = $customer->start_date ? \Carbon\Carbon::parse($customer->start_date)->format('d-M-Y') : '-';
                                             $waterDate = '-';
                                             $type = '-';
                                             $sizeOfPlot = '-';
+                                            $totalMonths = '-';
                                             
-                                            $sortedInvoices = $customer->invoices->sortByDesc('service_date');
+                                            $sortedInvoices = $customer->invoices->sortBy([
+                                                ['service_date', 'desc'],
+                                                ['id', 'desc']
+                                            ]);
                                             if ($sortedInvoices->count() > 0) {
                                                 $latestInvoice = $sortedInvoices->first();
-                                                // Temporarily keeping these blank as per user request
-                                                $type = '-'; 
-                                                $sizeOfPlot = '-'; 
+                                                if ($latestInvoice && $latestInvoice->service_date) {
+                                                    $waterDate = \Carbon\Carbon::parse($latestInvoice->service_date)->format('d-M-Y');
+                                                    
+                                                    if ($customer->start_date) {
+                                                        $d1 = \Carbon\Carbon::parse($customer->start_date);
+                                                        $d2 = \Carbon\Carbon::parse($latestInvoice->service_date);
+                                                        $monthsGap = ($d2->year - $d1->year) * 12 + ($d2->month - $d1->month);
+                                                        $totalMonths = max(0, $monthsGap);
+                                                    }
+                                                }
+                                                foreach ($sortedInvoices as $inv) {
+                                                    if (!empty($inv->type)) {
+                                                        $type = $inv->type;
+                                                        break;
+                                                    }
+                                                }
+                                                
+                                                // Reverse lookup marla from service details
+                                                foreach ($latestInvoice->services as $s) {
+                                                    $pivotAmount = $s->pivot->monthly_charges ?? $s->pivot->amount;
+                                                    if (!empty($s->details) && is_array($s->details)) {
+                                                        foreach ($s->details as $detail) {
+                                                            if (isset($detail['amount']) && isset($detail['marla']) && $detail['amount'] == $pivotAmount) {
+                                                                if ($sizeOfPlot === '-') {
+                                                                    $sizeOfPlot = $detail['marla'];
+                                                                }
+                                                                break;
+                                                            }
+                                                        }
+                                                    } elseif ($s->marla) {
+                                                        // Fallback to single marla field on service if it exists and matches amount
+                                                        if (($s->amount == $pivotAmount) && $sizeOfPlot === '-') {
+                                                            $sizeOfPlot = $s->marla;
+                                                        }
+                                                    }
+                                                }
                                             }
 
                                             foreach ($sortedInvoices as $inv) {
@@ -139,11 +176,6 @@
                                                 if ($wService) {
                                                     $totalWaterArrears += $wService->pivot->arrears;
                                                     $totalPayableWater += $wService->pivot->total_payable;
-                                                    if ($waterDate === '-') {
-                                                        $waterDate = \Carbon\Carbon::parse($inv->service_date)->format('d-M-Y');
-                                                    }
-                                                } else {
-                                                    // Bungalow Date temporarily left blank as per user request
                                                 }
                                             }
                                             
@@ -168,7 +200,7 @@
                                             <td class="border border-gray-300 px-4 py-2">{{ $plot }}</td>
                                             <td class="border border-gray-300 px-4 py-2">{{ $type }}</td>
                                             <td class="border border-gray-300 px-4 py-2">{{ $sizeOfPlot }}</td>
-                                            <td class="border border-gray-300 px-4 py-2">-</td>
+                                            <td class="border border-gray-300 px-4 py-2 font-medium">{{ $totalMonths }}</td>
                                             
                                             <td class="border border-gray-300 px-4 py-2">-</td>
                                             <td class="border border-gray-300 px-4 py-2">{{ $totalWaterArrears > 0 ? number_format($totalWaterArrears, 2) : '-' }}</td>

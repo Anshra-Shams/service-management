@@ -47,9 +47,6 @@ class ReceiptController extends Controller
         
         if ($request->filled('customer_id')) {
             $query->where('id', $request->customer_id);
-        } else {
-            // Only show customers that have at least one receipt
-            $query->whereHas('receipts');
         }
         
         $perPage = $request->input('per_page', 10);

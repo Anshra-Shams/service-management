@@ -25,19 +25,50 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
+            'details' => 'nullable|array',
+            'details.*.amount' => 'nullable|numeric',
+            'details.*.marla' => 'nullable|string|max:255',
         ]);
-        Service::create($request->only('name'));
-        return redirect()->back()->with('success', 'Service added successfully.');
+        
+        $serviceData = [
+            'name' => $request->name,
+            'details' => $request->details ?? [],
+        ];
+        
+        if (!empty($request->details) && count($request->details) > 0) {
+            $serviceData['amount'] = $request->details[0]['amount'] ?? null;
+            $serviceData['marla'] = $request->details[0]['marla'] ?? null;
+        }
+
+        Service::create($serviceData);
+        return redirect()->back()->with('success', 'Category added successfully.');
     }
 
     public function update(Request $request, Service $service)
     {
         $request->validate([
-            'name' => 'required|string|max:255'
+            'name' => 'required|string|max:255',
+            'details' => 'nullable|array',
+            'details.*.amount' => 'nullable|numeric',
+            'details.*.marla' => 'nullable|string|max:255',
         ]);
-        $service->update($request->only('name'));
-        return redirect()->back()->with('success', 'Service updated successfully.');
+        
+        $serviceData = [
+            'name' => $request->name,
+            'details' => $request->details ?? [],
+        ];
+        
+        if (!empty($request->details) && count($request->details) > 0) {
+            $serviceData['amount'] = $request->details[0]['amount'] ?? null;
+            $serviceData['marla'] = $request->details[0]['marla'] ?? null;
+        } else {
+            $serviceData['amount'] = null;
+            $serviceData['marla'] = null;
+        }
+
+        $service->update($serviceData);
+        return redirect()->back()->with('success', 'Category updated successfully.');
     }
 
     public function destroy(Service $service)

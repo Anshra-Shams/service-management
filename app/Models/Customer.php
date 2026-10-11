@@ -14,6 +14,7 @@ class Customer extends Model
         'contact_number',
         'address',
         'opening_balance',
+        'start_date',
     ];
 
     protected $appends = ['closing_balance'];

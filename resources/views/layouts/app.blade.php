@@ -48,7 +48,13 @@
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        document.getElementById(formId).submit();
+                        let el = document.getElementById(formId);
+                        if (!el) el = document.getElementById('delete-service-' + formId);
+                        if (!el) el = document.getElementById('delete-receipt-' + formId);
+                        if (!el) el = document.getElementById('delete-customer-' + formId);
+                        if (el) {
+                            el.submit();
+                        }
                     }
                 })
             }

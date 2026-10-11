@@ -30,6 +30,7 @@ class CustomerController extends Controller
             'contact_number' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:500',
             'opening_balance' => 'nullable|numeric',
+            'start_date' => 'nullable|date',
         ]);
 
         Customer::create([
@@ -37,6 +38,7 @@ class CustomerController extends Controller
             'contact_number' => $request->contact_number,
             'address' => $request->address,
             'opening_balance' => $request->opening_balance ?? 0.00,
+            'start_date' => $request->start_date,
         ]);
 
         return redirect()->back()->with('success', 'Customer added successfully!');
@@ -49,6 +51,7 @@ class CustomerController extends Controller
             'contact_number' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:500',
             'opening_balance' => 'nullable|numeric',
+            'start_date' => 'nullable|date',
         ]);
 
         $customer->update([
@@ -56,6 +59,7 @@ class CustomerController extends Controller
             'contact_number' => $request->contact_number,
             'address' => $request->address,
             'opening_balance' => $request->opening_balance ?? 0.00,
+            'start_date' => $request->start_date,
         ]);
 
         return redirect()->back()->with('success', 'Customer updated successfully!');
