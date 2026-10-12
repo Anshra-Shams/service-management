@@ -52,8 +52,41 @@ class ReceiptController extends Controller
         $perPage = $request->input('per_page', 10);
         $reportCustomers = $query->paginate($perPage)->appends($request->query());
         $customers = Customer::orderBy('name')->get();
-        
-        return view('receipt-report', compact('reportCustomers', 'customers'));
+
+        // Calculate totals across all matched customers
+        $allMatchedCustomers = (clone $query)->get();
+        $grandTotalReceived = 0;
+        $grandTotalPayableHouse = 0;
+        $grandTotalPayableWater = 0;
+        $grandTotalPayable = 0;
+        $grandTotalOutstanding = 0;
+
+        foreach ($allMatchedCustomers as $c) {
+            $grandTotalReceived += $c->receipts->sum('amount');
+            $cPayable = $c->invoices->sum('amount');
+            $grandTotalPayable += $cPayable;
+            $grandTotalPayableHouse += $cPayable;
+            $grandTotalOutstanding += $c->closing_balance;
+
+            foreach ($c->invoices as $inv) {
+                $wService = $inv->services->firstWhere(function ($s) {
+                    return stripos($s->name, 'water') !== false;
+                });
+                if ($wService) {
+                    $grandTotalPayableWater += $wService->pivot->total_payable;
+                }
+            }
+        }
+
+        return view('receipt-report', compact(
+            'reportCustomers',
+            'customers',
+            'grandTotalReceived',
+            'grandTotalPayableHouse',
+            'grandTotalPayableWater',
+            'grandTotalPayable',
+            'grandTotalOutstanding'
+        ));
     }
 
     public function store(Request $request)

@@ -1,87 +1,379 @@
 <x-app-layout>
-    <div class="py-8 bg-gray-50">
-        <div class="w-full px-4 md:px-8 mx-auto">
+    <!-- Select2 CSS for searchable customer dropdown -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container .select2-selection--single {
+            height: 42px !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.5rem !important;
+            display: flex;
+            align-items: center;
+            background-color: #ffffff !important;
+            padding-left: 0.75rem;
+            font-size: 0.875rem;
+            color: #111827;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+            right: 10px !important;
+        }
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default.select2-container--open .select2-selection--single {
+            outline: none;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+        .select2-dropdown {
+            border-color: #e5e7eb !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Filter Row Layout */
+        .ledger-filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 16px;
+        }
+        .ledger-col-customer {
+            flex: 2;
+            min-width: 250px;
+        }
+        .ledger-col-date {
+            flex: 1;
+            min-width: 170px;
+        }
+        .ledger-col-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .ledger-input {
+            height: 42px !important;
+            width: 100% !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.5rem !important;
+            padding: 0 0.75rem !important;
+            font-size: 0.875rem !important;
+            color: #111827 !important;
+            background-color: #ffffff !important;
+        }
+        .ledger-btn-filter {
+            height: 42px !important;
+            padding: 0 32px !important;
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            font-size: 0.875rem !important;
+            border-radius: 0.5rem !important;
+            border: none !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: background-color 0.15s ease-in-out;
+            white-space: nowrap !important;
+        }
+        .ledger-btn-filter:hover {
+            background-color: #1d4ed8 !important;
+        }
+        .ledger-btn-icon {
+            height: 42px !important;
+            width: 42px !important;
+            border: 1px solid #d1d5db !important;
+            background-color: #ffffff !important;
+            color: #4b5563 !important;
+            border-radius: 0.5rem !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: background-color 0.15s ease-in-out;
+        }
+        .ledger-btn-icon:hover {
+            background-color: #f9fafb !important;
+        }
+
+        /* Table Header Explicit Colors */
+        .ledger-table-head {
+            background-color: #1e2530 !important;
+        }
+        .ledger-table-head th {
+            background-color: #1e2530 !important;
+            color: #ffffff !important;
+            font-size: 0.8125rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.05em !important;
+            padding: 14px 18px !important;
+            border: none !important;
+            vertical-align: middle !important;
+        }
+
+        @media print {
+            nav, .no-print, button, a[href]:not(.print-keep) {
+                display: none !important;
+            }
+            body {
+                background: white !important;
+            }
+            .print-container {
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .print-header {
+                display: block !important;
+            }
+        }
+    </style>
+
+    <div class="py-6 bg-gray-50 min-h-screen">
+        <div class="w-full px-4 md:px-8 mx-auto print-container">
             
-            <div class="mb-6 flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <a href="{{ route('customer') }}" class="text-gray-500 hover:text-gray-700">
+            <!-- Print Header (only visible when printing) -->
+            <div class="hidden print-header mb-6 pb-4 border-b border-gray-300">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900">Service Management System</h1>
+                        <p class="text-sm text-gray-600">Customer Statement / Ledger</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold text-gray-800">{{ $selectedCustomer ? $selectedCustomer->name : 'N/A' }}</p>
+                        <p class="text-xs text-gray-500">Printed: {{ now()->format('d/m/Y h:i A') }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Title Bar (no-print) -->
+            <div class="mb-6 flex items-center justify-between no-print">
+                <div class="flex items-center gap-3">
+                    <a href="{{ route('customer') }}" class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Back to Customers">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     </a>
-                    <h2 class="text-2xl font-bold text-gray-800">Customer Ledger</h2>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Customer Ledger</h2>
+                        <p class="text-xs text-gray-500">Track customer bills, receipts & running balances</p>
+                    </div>
                 </div>
-                
-                <form action="{{ route('customer.ledger') }}" method="GET" class="flex items-center">
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                        </div>
-                        <input type="text" name="search" value="{{ request('search') }}" oninput="clearTimeout(this.timer); this.timer = setTimeout(() => this.form.submit(), 600)" placeholder="Search customer..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64 shadow-sm">
+                <div class="flex items-center gap-2">
+                    <a href="{{ route('receipt') }}" class="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 font-medium text-sm flex items-center gap-2 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                        New Receipt
+                    </a>
+                </div>
+            </div>
+
+            <!-- Top Filter Form Box (Enhanced Padding & Spacing) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-8 no-print" style="padding: 26px 30px !important;">
+                <form action="{{ route('customer.ledger') }}" method="GET" class="ledger-filter-row">
+                    
+                    <!-- Customer Selector -->
+                    <div class="ledger-col-customer">
+                        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">Select Customer</label>
+                        <select name="customer_id" class="select2 w-full">
+                            <option value="" {{ !$selectedCustomer ? 'selected' : '' }}>-- Select Customer --</option>
+                            @foreach($customers as $c)
+                                <option value="{{ $c->id }}" {{ ($selectedCustomer && $selectedCustomer->id == $c->id) ? 'selected' : '' }}>
+                                    {{ $c->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- From Date -->
+                    <div class="ledger-col-date">
+                        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">From Date</label>
+                        <input type="date" name="from_date" value="{{ request('from_date') }}" class="ledger-input">
+                    </div>
+
+                    <!-- To Date -->
+                    <div class="ledger-col-date">
+                        <label class="block text-xs font-semibold text-gray-600 mb-2 uppercase tracking-wider">To Date</label>
+                        <input type="date" name="to_date" value="{{ request('to_date') }}" class="ledger-input">
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="ledger-col-actions">
+                        <button type="submit" class="ledger-btn-filter">
+                            Filter
+                        </button>
+                        
+                        @if(request('customer_id') || request('from_date') || request('to_date'))
+                            <a href="{{ route('customer.ledger') }}" class="ledger-btn-icon" title="Reset Filters">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </a>
+                        @endif
                     </div>
                 </form>
             </div>
 
-            <div class="bg-white overflow-hidden shadow-sm rounded-xl border border-gray-100">
-                <div class="p-0 text-gray-900">
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left border-collapse bg-white">
-                            <thead>
-                                <tr class="text-xs font-semibold text-gray-500 uppercase tracking-wider border-b border-gray-200 bg-gray-50/50">
-                                    <th class="px-6 py-4 flex items-center gap-1">CUSTOMER ID <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg></th>
-                                    <th class="px-6 py-4">
-                                        <div class="flex items-center gap-1">CUSTOMER NAME <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg></div>
-                                    </th>
-                                    <th class="px-6 py-4">
-                                        <div class="flex items-center gap-1">OPENING BALANCE <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg></div>
-                                    </th>
-                                    <th class="px-6 py-4">
-                                        <div class="flex items-center gap-1">PREVIOUS BALANCE <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg></div>
-                                    </th>
-                                    <th class="px-6 py-4">
-                                        <div class="flex items-center gap-1">CLOSING BALANCE <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg></div>
-                                    </th>
-                                    <th class="px-6 py-4">
-                                        <div class="flex items-center gap-1">LAST UPDATED <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l4-4 4 4m0 6l-4 4-4-4"></path></svg></div>
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
-                                @foreach($customers as $customer)
-                                <tr class="hover:bg-gray-50/50 transition-colors {{ $loop->even ? 'bg-gray-100/50' : 'bg-white' }}">
-                                    <td class="px-6 py-4">
-                                        <span class="inline-flex items-center justify-center w-6 h-6 rounded text-xs font-bold" style="background-color: #059669; color: white;">
-                                            {{ $customer->id }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4">
-                                        <div class="flex items-center">
-                                            <div class="h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm mr-3" style="background-color: #059669; color: white;">
-                                                {{ strtoupper(substr($customer->name, 0, 1)) }}
-                                            </div>
-                                            <span class="font-medium text-gray-700">{{ $customer->name }}</span>
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-600">PKR {{ number_format($customer->opening_balance, 0) }}</td>
-                                    <td class="px-6 py-4 text-gray-600">PKR {{ number_format($customer->opening_balance, 0) }}</td>
-                                    <td class="px-6 py-4 font-medium {{ $customer->closing_balance > 0 ? 'text-red-500' : 'text-gray-600' }}">
-                                        PKR {{ number_format($customer->closing_balance, 0) }}
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-500">
-                                        {{ $customer->updated_at->format('d M Y h:i A') }}
-                                    </td>
-                                </tr>
-                                @endforeach
-                                @if($customers->isEmpty())
+            <!-- Summary Cards (Spacious padding & elegant typography) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                
+                <!-- Card 1: OPENING BALANCE -->
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between" style="padding: 16px 22px !important; min-height: 112px !important;">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider">OPENING BALANCE</span>
+                        <div class="text-2xl font-bold text-gray-900 mt-1">
+                            Rs. {{ number_format(abs($openingBalance), 2) }} <span class="text-base font-semibold text-gray-500">{{ $openingBalance >= 0 ? 'Dr' : 'Cr' }}</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-2 font-medium">
+                        @if($selectedCustomer)
+                            As of {{ $asOfDate }}
+                        @else
+                            No customer selected
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Card 2: CLOSING BALANCE (Vibrant Red/Pink background) -->
+                <div class="rounded-xl shadow-sm flex flex-col justify-between text-white" style="background-color: #f43f5e !important; color: #ffffff !important; padding: 16px 22px !important; min-height: 112px !important;">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider" style="color: rgba(255, 255, 255, 0.9);">CLOSING BALANCE</span>
+                        <div class="text-2xl font-bold mt-1" style="color: #ffffff;">
+                            Rs. {{ number_format(abs($closingBalance), 2) }} <span class="text-base font-semibold" style="color: rgba(255, 255, 255, 0.9);">{{ $closingBalance >= 0 ? 'Dr' : 'Cr' }}</span>
+                        </div>
+                    </div>
+                    <div class="text-xs mt-2 font-medium" style="color: rgba(255, 255, 255, 0.95);">
+                        @if(!$selectedCustomer)
+                            Please select a customer
+                        @elseif($closingBalance > 0)
+                            Receivable (Customer Owes)
+                        @elseif($closingBalance < 0)
+                            Advance (Payable to Customer)
+                        @else
+                            Settled / Nil Balance
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Card 3: TOTAL TRANSACTIONS -->
+                <div class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between" style="padding: 16px 22px !important; min-height: 112px !important;">
+                    <div>
+                        <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider">TOTAL TRANSACTIONS</span>
+                        <div class="text-2xl font-bold text-gray-900 mt-1">
+                            {{ count($transactions) }}
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-2 font-medium">
+                        In selected period
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Ledger Transactions Table (Explicit black background & crisp white headers) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse bg-white">
+                        <thead class="ledger-table-head">
+                            <tr>
+                                <th style="width: 60px; text-align: center; padding: 16px 20px !important;">#</th>
+                                <th style="width: 140px; padding: 16px 20px !important;">Date</th>
+                                <th style="width: 200px; padding: 16px 20px !important;">Customer</th>
+                                <th style="padding: 16px 20px !important;">Description / Particulars</th>
+                                <th style="width: 160px; text-align: right; padding: 16px 20px !important;">Debit (Dr)</th>
+                                <th style="width: 160px; text-align: right; padding: 16px 20px !important;">Credit (Cr)</th>
+                                <th style="width: 170px; text-align: right; padding: 16px 20px !important;">Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            @if(!$selectedCustomer)
                                 <tr>
-                                    <td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium">
-                                        No customers found.
+                                    <td colspan="7" class="px-6 py-16 text-center text-gray-500 font-medium">
+                                        <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                        Please select a customer from the dropdown above to view their ledger.
                                     </td>
                                 </tr>
-                                @endif
-                            </tbody>
-                        </table>
-                    <x-pagination :items="$customers" />
+                            @else
+                                @forelse($transactions as $index => $row)
+                                    <tr class="hover:bg-gray-50/70 transition-colors">
+                                        <!-- Index -->
+                                        <td style="padding: 16px 20px !important;" class="text-center text-gray-500 font-medium">
+                                            {{ $index + 1 }}
+                                        </td>
+                                        
+                                        <!-- Date -->
+                                        <td style="padding: 16px 20px !important;" class="text-gray-700 whitespace-nowrap font-normal">
+                                            {{ $row['formatted_date'] }}
+                                        </td>
+                                        
+                                        <!-- Customer Name -->
+                                        <td style="padding: 16px 20px !important;" class="text-gray-800 font-medium whitespace-nowrap">
+                                            {{ $selectedCustomer->name }}
+                                        </td>
+                                        
+                                        <!-- Particulars / Description -->
+                                        <td style="padding: 16px 20px !important;" class="text-gray-700">
+                                            @if($row['url'])
+                                                <a href="{{ $row['url'] }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                                    {{ $row['description'] }}
+                                                </a>
+                                            @else
+                                                <span class="font-medium text-gray-800">{{ $row['description'] }}</span>
+                                            @endif
+                                        </td>
+                                        
+                                        <!-- Debit (Dr) -->
+                                        <td style="padding: 16px 20px !important;" class="text-right font-medium whitespace-nowrap">
+                                            @if($row['debit'] !== null)
+                                                <span style="color: #10b981; font-weight: 600;">{{ number_format($row['debit'], 2) }}</span>
+                                            @else
+                                                <span style="color: #f43f5e;">-</span>
+                                            @endif
+                                        </td>
+                                        
+                                        <!-- Credit (Cr) -->
+                                        <td style="padding: 16px 20px !important;" class="text-right font-medium whitespace-nowrap">
+                                            @if($row['credit'] !== null)
+                                                <span style="color: #f43f5e; font-weight: 600;">{{ number_format($row['credit'], 2) }}</span>
+                                            @else
+                                                <span style="color: #f43f5e;">-</span>
+                                            @endif
+                                        </td>
+                                        
+                                        <!-- Balance -->
+                                        <td style="padding: 16px 20px !important;" class="text-right font-semibold text-gray-900 whitespace-nowrap">
+                                            {{ number_format(abs($row['balance']), 2) }} 
+                                            <span class="text-xs font-normal text-gray-500">{{ $row['balance'] >= 0 ? 'Dr' : 'Cr' }}</span>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="7" class="px-6 py-12 text-center text-gray-400 font-medium">
+                                            <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                            No receipt vouchers found for this customer in selected period.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            @endif
+                        </tbody>
+                    </table>
                 </div>
             </div>
+
         </div>
     </div>
+
+    <!-- Select2 Initialization Script -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('.select2').select2({
+                placeholder: "-- Select Customer --",
+                allowClear: true,
+                width: '100%'
+            });
+            // Automatically submit when customer changes
+            $('.select2').on('change', function() {
+                if ($(this).val()) {
+                    $(this).closest('form').submit();
+                }
+            });
+        });
+    </script>
 </x-app-layout>

@@ -223,6 +223,30 @@
                                     </tr>
                                 @endif
                             </tbody>
+                            @if(isset($reportCustomers) && count($reportCustomers) > 0)
+                                <tfoot class="bg-gray-100 font-bold border-t-2 border-gray-300">
+                                    <tr>
+                                        <td colspan="14" class="border border-gray-300 px-4 py-3 text-right uppercase tracking-wider text-xs font-bold text-gray-700 bg-gray-100">
+                                            Total:
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-3 bg-green-100 text-green-800 font-bold text-center">
+                                            {{ number_format($grandTotalReceived ?? 0, 2) }}
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-3 text-center text-gray-500 font-medium">
+                                            -
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-3 text-center text-gray-500 font-medium">
+                                            -
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-3 bg-yellow-100 text-yellow-900 font-bold text-center">
+                                            {{ number_format($grandTotalPayable ?? 0, 2) }}
+                                        </td>
+                                        <td class="border border-gray-300 px-4 py-3 bg-red-100 text-red-800 font-bold text-center">
+                                            {{ number_format($grandTotalOutstanding ?? 0, 2) }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            @endif
                         </table>
                     </div>
                     

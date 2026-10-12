@@ -18,7 +18,7 @@
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-4 py-2 border border-blue-900/50 text-sm leading-4 font-medium rounded-full text-blue-100 bg-blue-900/30 hover:bg-blue-900/50 focus:outline-none transition ease-in-out duration-150">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                <div>{{ Auth::user()->name }}</div>
+                                <div>{{ Auth::user()?->name ?? 'Admin' }}</div>
                             </button>
                         </x-slot>
 
@@ -103,6 +103,12 @@
                                 <!-- Chart/Report Icon -->
                                 <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
                                 <span>Reports</span>
+                            </a>
+
+                            <a href="{{ route('customer.ledger') }}" class="flex items-center gap-4 px-6 py-3 text-[15px] font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors whitespace-nowrap">
+                                <!-- Ledger Icon -->
+                                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <span>Customer Ledger</span>
                             </a>
                             
                         </div>
