@@ -12,6 +12,12 @@ class Customer extends Model
     protected $fillable = [
         'name',
         'contact_number',
+        'plot_size',
+        'type',
+        'plot',
+        'street',
+        'sector',
+        'phase',
         'address',
         'opening_balance',
         'start_date',
@@ -27,6 +33,13 @@ class Customer extends Model
     public function receipts()
     {
         return $this->hasMany(Receipt::class);
+    }
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'customer_service')
+                    ->withPivot('amount', 'marla')
+                    ->withTimestamps();
     }
 
     public function getClosingBalanceAttribute()

@@ -124,7 +124,7 @@
                                             $bungalowDate = $customer->start_date ? \Carbon\Carbon::parse($customer->start_date)->format('d-M-Y') : '-';
                                             $waterDate = '-';
                                             $type = '-';
-                                            $sizeOfPlot = '-';
+                                            $sizeOfPlot = !empty($customer->plot_size) ? $customer->plot_size : '-';
                                             $totalMonths = '-';
                                             
                                             $sortedInvoices = $customer->invoices->sortBy([
@@ -185,10 +185,12 @@
                                             
                                             $phone = $customer->contact_number ?: '-';
                                             $rawAddress = trim($customer->address ?? '');
-                                            $plot = '-'; $sector = '-'; $street = '-';
-                                            if (preg_match('/(plot|house|h\.no|p\.no)\s*[:#\-]?\s*([a-zA-Z0-9\-\/]+)/i', $rawAddress, $m)) $plot = $m[2];
-                                            if (preg_match('/sector\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) $sector = $m[1];
-                                            if (preg_match('/street\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) $street = $m[1];
+                                            $plot = $customer->plot ?: '-';
+                                            $sector = $customer->sector ?: '-';
+                                            $street = $customer->street ?: '-';
+                                            if ($plot === '-' && preg_match('/(plot|house|h\.no|p\.no)\s*[:#\-]?\s*([a-zA-Z0-9\-\/]+)/i', $rawAddress, $m)) $plot = $m[2];
+                                            if ($sector === '-' && preg_match('/sector\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) $sector = $m[1];
+                                            if ($street === '-' && preg_match('/street\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) $street = $m[1];
                                         @endphp
                                         <tr class="hover:bg-gray-50">
                                             <td class="border border-gray-300 px-4 py-2 font-semibold text-left">{{ $customer->name }}</td>

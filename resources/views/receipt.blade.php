@@ -1,4 +1,48 @@
 <x-app-layout>
+    <!-- Select2 CSS for searchable customer dropdown -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container .select2-selection--single {
+            height: 42px !important;
+            border: 1px solid #d1d5db !important;
+            border-radius: 0.5rem !important;
+            display: flex;
+            align-items: center;
+            background-color: #ffffff !important;
+            padding-left: 0.75rem;
+            font-size: 0.875rem;
+            color: #111827;
+        }
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 40px !important;
+            right: 10px !important;
+        }
+        .select2-container--default .select2-selection--single:focus,
+        .select2-container--default.select2-container--open .select2-selection--single {
+            outline: none;
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+        }
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background-color: #3b82f6 !important;
+        }
+        .select2-dropdown {
+            border-color: #e5e7eb !important;
+            border-radius: 0.5rem !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            z-index: 99999 !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border-radius: 0.375rem !important;
+            border: 1px solid #d1d5db !important;
+            padding: 6px 10px !important;
+            outline: none !important;
+        }
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: #3b82f6 !important;
+        }
+    </style>
+
     <div class="py-8 bg-gray-50"
          x-data="{
             showModal: false,
@@ -8,10 +52,17 @@
             blank() {
                 return { id: null, customer_id: '', invoice_id: '', receipt_date: '{{ now()->toDateString() }}', amount: '', payment_method: 'cash', reference_no: '', remarks: '' };
             },
-            openAdd() { this.form = this.blank(); this.isEdit = false; this.showModal = true; },
+            openAdd() { 
+                this.form = this.blank(); 
+                this.isEdit = false; 
+                this.showModal = true; 
+                this.$nextTick(() => { initReceiptSelect2(''); });
+            },
             openEdit(r) {
                 this.form = { ...r, invoice_id: r.invoice_id ?? '', reference_no: r.reference_no ?? '', remarks: r.remarks ?? '', receipt_date: (r.receipt_date || '').substring(0, 10) };
-                this.isEdit = true; this.showModal = true;
+                this.isEdit = true; 
+                this.showModal = true;
+                this.$nextTick(() => { initReceiptSelect2(r.customer_id); });
             },
             get customerInvoices() { return this.invoices.filter(i => i.customer_id == this.form.customer_id); },
             pickInvoice() {
@@ -19,7 +70,7 @@
                 if (inv && !this.form.amount) this.form.amount = inv.amount;
             }
          }"
-         x-init="form = blank(); @if($errors->any()) form = { ...blank(), ...{{ Js::from(old()) }} }; isEdit = !!form.id; showModal = true; @endif">
+         x-init="form = blank(); @if($errors->any()) form = { ...blank(), ...{{ Js::from(old()) }} }; isEdit = !!form.id; showModal = true; $nextTick(() => initReceiptSelect2(form.customer_id)); @endif">
         <div class="w-full px-4 md:px-8 mx-auto">
 
             @if(session('success'))
@@ -121,7 +172,7 @@
         <div x-show="showModal" style="display: none;" class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
             <div class="fixed inset-0 bg-gray-900 bg-opacity-50" @click="showModal = false"></div>
             <div class="flex min-h-screen items-center justify-center p-4">
-                <div x-show="showModal" x-transition class="relative w-full max-w-md rounded-xl bg-white shadow-xl p-6">
+                <div id="receipt_modal_box" x-show="showModal" x-transition class="relative w-full max-w-md rounded-xl bg-white shadow-xl p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-4" x-text="isEdit ? 'Edit Receipt Voucher' : 'New Receipt Voucher'"></h3>
 
                     @if($errors->any())
@@ -130,7 +181,7 @@
                         </div>
                     @endif
 
-                    <form :action="isEdit ? `{{ url('receipt') }}/${form.id}` : '{{ route('receipt.store') }}'" method="POST">
+                    <form id="receipt_form" :action="isEdit ? `{{ url('receipt') }}/${form.id}` : '{{ route('receipt.store') }}'" method="POST">
                         @csrf
                         <template x-if="isEdit"><input type="hidden" name="_method" value="PUT"></template>
                         <input type="hidden" name="id" :value="form.id">
@@ -139,7 +190,7 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1.5">Customer <span class="text-red-500">*</span></label>
-                                <select name="customer_id" x-model="form.customer_id" @change="form.invoice_id = ''" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <select name="customer_id" id="receipt_customer_id" class="w-full">
                                     <option value="">Select customer</option>
                                     @foreach($customers as $customer)
                                         <option value="{{ $customer->id }}">{{ $customer->name }} (Balance: Rs. {{ number_format($customer->closing_balance, 2) }})</option>
@@ -149,7 +200,7 @@
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1.5">Receipt Date <span class="text-red-500">*</span></label>
-                                <input type="date" name="receipt_date" x-model="form.receipt_date" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input type="date" name="receipt_date" x-model="form.receipt_date" required class="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500 cursor-pointer" onclick="if(this.showPicker) this.showPicker()">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1.5">Amount (Rs.) <span class="text-red-500">*</span></label>
@@ -171,8 +222,42 @@
         </div>
     </div>
 
+    <!-- jQuery, Select2, and SweetAlert2 JS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        function initReceiptSelect2(selectedVal = '') {
+            const $select = $('#receipt_customer_id');
+            if ($select.hasClass('select2-hidden-accessible')) {
+                $select.select2('destroy');
+            }
+            $select.select2({
+                placeholder: 'Select customer',
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#receipt_modal_box')
+            });
+            $select.val(selectedVal ? String(selectedVal) : '').trigger('change.select2');
+            $select.off('change.alpineSync').on('change.alpineSync', function() {
+                const val = $(this).val();
+                const root = document.querySelector('[x-data]');
+                if (root && root._x_dataStack && root._x_dataStack[0]) {
+                    root._x_dataStack[0].form.customer_id = val;
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $('#receipt_form').on('submit', function(e) {
+                if (!$('#receipt_customer_id').val()) {
+                    e.preventDefault();
+                    $('#receipt_customer_id').select2('open');
+                    return false;
+                }
+            });
+        });
+
         function confirmDelete(id) {
             Swal.fire({
                 title: 'Delete this receipt voucher?',
@@ -186,7 +271,7 @@
                 if (result.isConfirmed) {
                     document.getElementById('delete-receipt-' + id).submit();
                 }
-            })
+            });
         }
     </script>
 </x-app-layout>

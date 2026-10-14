@@ -18,4 +18,9 @@ class Service extends Model
     {
         return $this->belongsToMany(Invoice::class, 'invoice_service')->withPivot('amount')->withTimestamps();
     }
+
+    public function customers()
+    {
+        return $this->belongsToMany(Customer::class, 'customer_service')->withPivot('amount', 'marla')->withTimestamps();
+    }
 }

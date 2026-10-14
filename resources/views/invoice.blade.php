@@ -114,29 +114,28 @@
         $formattedIssueDate = \Carbon\Carbon::parse($service_date)->format('d/m/Y');
         $billingMonthStr = \Carbon\Carbon::parse($service_date)->format('F');
         
-        // Smart parse of address if available (e.g., "B-193, Sector B, Phase II")
+        // Location details from customer attributes, falling back to smart parse of address
         $rawAddress = trim($customer->address ?? '');
-        
         $addressParts = explode(',', $rawAddress);
-        $plotNo = trim($addressParts[0] ?? '');
+
+        $plotNo = $customer->plot ?: trim($addressParts[0] ?? '');
+        $sector = $customer->sector ?: '';
+        $streetNo = $customer->street ?: '';
+        $phase = $customer->phase ?: '';
         
-        $sector = '';
-        $streetNo = '';
-        $phase = '';
-        
-        $category = $invoice->category ?? '';
+        $category = $invoice->category ?? ($customer->plot_size ?? '');
         $type = $invoice->type ?? '';
 
-        if (preg_match('/(plot|house|h\.no|p\.no)\s*[:#\-]?\s*([a-zA-Z0-9\-\/]+)/i', $rawAddress, $m)) {
+        if (!$plotNo && preg_match('/(plot|house|h\.no|p\.no)\s*[:#\-]?\s*([a-zA-Z0-9\-\/]+)/i', $rawAddress, $m)) {
             $plotNo = $m[2];
         }
-        if (preg_match('/sector\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) {
+        if (!$sector && preg_match('/sector\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) {
             $sector = $m[1];
         }
-        if (preg_match('/street\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) {
+        if (!$streetNo && preg_match('/street\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) {
             $streetNo = $m[1];
         }
-        if (preg_match('/phase\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) {
+        if (!$phase && preg_match('/phase\s*[:#\-]?\s*([a-zA-Z0-9]+)/i', $rawAddress, $m)) {
             $phase = $m[1];
         }
         

@@ -137,10 +137,10 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-900">Service Management System</h1>
-                        <p class="text-sm text-gray-600">Customer Statement / Ledger</p>
+                        <p class="text-sm text-gray-600">Received Reports</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-bold text-gray-800">{{ $selectedCustomer ? $selectedCustomer->name : 'N/A' }}</p>
+                        <p class="font-bold text-gray-800">{{ $selectedCustomer ? $selectedCustomer->name . ($selectedCustomer->plot_size ? ' (' . $selectedCustomer->plot_size . ')' : '') : 'N/A' }}</p>
                         <p class="text-xs text-gray-500">Printed: {{ now()->format('d/m/Y h:i A') }}</p>
                     </div>
                 </div>
@@ -153,7 +153,7 @@
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                     </a>
                     <div>
-                        <h2 class="text-2xl font-bold text-gray-800">Customer Ledger</h2>
+                        <h2 class="text-2xl font-bold text-gray-800">Received Reports</h2>
                         <p class="text-xs text-gray-500">Track customer bills, receipts & running balances</p>
                     </div>
                 </div>
@@ -176,7 +176,7 @@
                             <option value="" {{ !$selectedCustomer ? 'selected' : '' }}>-- Select Customer --</option>
                             @foreach($customers as $c)
                                 <option value="{{ $c->id }}" {{ ($selectedCustomer && $selectedCustomer->id == $c->id) ? 'selected' : '' }}>
-                                    {{ $c->name }}
+                                    {{ $c->name }}{{ $c->plot_size ? ' (' . $c->plot_size . ')' : '' }}
                                 </option>
                             @endforeach
                         </select>
@@ -209,106 +209,46 @@
                 </form>
             </div>
 
-            <!-- Summary Cards (Spacious padding & elegant typography) -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                
-                <!-- Card 1: OPENING BALANCE -->
-                <div class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between" style="padding: 16px 22px !important; min-height: 112px !important;">
-                    <div>
-                        <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider">OPENING BALANCE</span>
-                        <div class="text-2xl font-bold text-gray-900 mt-1">
-                            Rs. {{ number_format(abs($openingBalance), 2) }} <span class="text-base font-semibold text-gray-500">{{ $openingBalance >= 0 ? 'Dr' : 'Cr' }}</span>
-                        </div>
-                    </div>
-                    <div class="text-xs text-gray-400 mt-2 font-medium">
-                        @if($selectedCustomer)
-                            As of {{ $asOfDate }}
-                        @else
-                            No customer selected
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Card 2: CLOSING BALANCE (Vibrant Red/Pink background) -->
-                <div class="rounded-xl shadow-sm flex flex-col justify-between text-white" style="background-color: #f43f5e !important; color: #ffffff !important; padding: 16px 22px !important; min-height: 112px !important;">
-                    <div>
-                        <span class="text-xs font-bold uppercase tracking-wider" style="color: rgba(255, 255, 255, 0.9);">CLOSING BALANCE</span>
-                        <div class="text-2xl font-bold mt-1" style="color: #ffffff;">
-                            Rs. {{ number_format(abs($closingBalance), 2) }} <span class="text-base font-semibold" style="color: rgba(255, 255, 255, 0.9);">{{ $closingBalance >= 0 ? 'Dr' : 'Cr' }}</span>
-                        </div>
-                    </div>
-                    <div class="text-xs mt-2 font-medium" style="color: rgba(255, 255, 255, 0.95);">
-                        @if(!$selectedCustomer)
-                            Please select a customer
-                        @elseif($closingBalance > 0)
-                            Receivable (Customer Owes)
-                        @elseif($closingBalance < 0)
-                            Advance (Payable to Customer)
-                        @else
-                            Settled / Nil Balance
-                        @endif
-                    </div>
-                </div>
-
-                <!-- Card 3: TOTAL TRANSACTIONS -->
-                <div class="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col justify-between" style="padding: 16px 22px !important; min-height: 112px !important;">
-                    <div>
-                        <span class="text-xs font-bold text-indigo-500 uppercase tracking-wider">TOTAL TRANSACTIONS</span>
-                        <div class="text-2xl font-bold text-gray-900 mt-1">
-                            {{ count($transactions) }}
-                        </div>
-                    </div>
-                    <div class="text-xs text-gray-400 mt-2 font-medium">
-                        In selected period
-                    </div>
-                </div>
-
-            </div>
-
             <!-- Ledger Transactions Table (Explicit black background & crisp white headers) -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse bg-white">
                         <thead class="ledger-table-head">
                             <tr>
-                                <th style="width: 60px; text-align: center; padding: 16px 20px !important;">#</th>
-                                <th style="width: 140px; padding: 16px 20px !important;">Date</th>
-                                <th style="width: 200px; padding: 16px 20px !important;">Customer</th>
-                                <th style="padding: 16px 20px !important;">Description / Particulars</th>
-                                <th style="width: 160px; text-align: right; padding: 16px 20px !important;">Debit (Dr)</th>
-                                <th style="width: 160px; text-align: right; padding: 16px 20px !important;">Credit (Cr)</th>
-                                <th style="width: 170px; text-align: right; padding: 16px 20px !important;">Balance</th>
+                                <th style="width: 50px; text-align: center; padding: 14px 16px !important;">#</th>
+                                <th style="min-width: 140px; padding: 14px 16px !important;">Customer Name</th>
+                                <th style="min-width: 200px; padding: 14px 16px !important;">Description / Particulars</th>
+                                <th style="min-width: 130px; text-align: center; padding: 14px 16px !important;">Bill Date</th>
+                                <th style="min-width: 140px; text-align: right; padding: 14px 16px !important;">Bill Amount</th>
+                                <th style="min-width: 130px; text-align: center; padding: 14px 16px !important;">Received Date</th>
+                                <th style="min-width: 140px; text-align: right; padding: 14px 16px !important;">Received Amount</th>
+                                <th style="min-width: 150px; text-align: right; padding: 14px 16px !important;">Outstanding</th>
                             </tr>
                         </thead>
                         <tbody class="text-sm divide-y divide-gray-100">
                             @if(!$selectedCustomer)
                                 <tr>
-                                    <td colspan="7" class="px-6 py-16 text-center text-gray-500 font-medium">
+                                    <td colspan="8" class="px-6 py-16 text-center text-gray-500 font-medium">
                                         <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                                        Please select a customer from the dropdown above to view their ledger.
+                                        Please select a customer from the dropdown above to view their received report.
                                     </td>
                                 </tr>
                             @else
                                 @forelse($transactions as $index => $row)
                                     <tr class="hover:bg-gray-50/70 transition-colors">
                                         <!-- Index -->
-                                        <td style="padding: 16px 20px !important;" class="text-center text-gray-500 font-medium">
+                                        <td style="padding: 14px 16px !important;" class="text-center text-gray-500 font-medium">
                                             {{ $index + 1 }}
                                         </td>
                                         
-                                        <!-- Date -->
-                                        <td style="padding: 16px 20px !important;" class="text-gray-700 whitespace-nowrap font-normal">
-                                            {{ $row['formatted_date'] }}
-                                        </td>
-                                        
                                         <!-- Customer Name -->
-                                        <td style="padding: 16px 20px !important;" class="text-gray-800 font-medium whitespace-nowrap">
-                                            {{ $selectedCustomer->name }}
+                                        <td style="padding: 14px 16px !important;" class="text-gray-800 font-semibold whitespace-nowrap">
+                                            {{ $row['customer_name'] ?? $selectedCustomer->name }}
                                         </td>
                                         
                                         <!-- Particulars / Description -->
-                                        <td style="padding: 16px 20px !important;" class="text-gray-700">
-                                            @if($row['url'])
+                                        <td style="padding: 14px 16px !important;" class="text-gray-700">
+                                            @if(!empty($row['url']))
                                                 <a href="{{ $row['url'] }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
                                                     {{ $row['description'] }}
                                                 </a>
@@ -317,40 +257,76 @@
                                             @endif
                                         </td>
                                         
-                                        <!-- Debit (Dr) -->
-                                        <td style="padding: 16px 20px !important;" class="text-right font-medium whitespace-nowrap">
-                                            @if($row['debit'] !== null)
-                                                <span style="color: #10b981; font-weight: 600;">{{ number_format($row['debit'], 2) }}</span>
+                                        <!-- Bill Date -->
+                                        <td style="padding: 14px 16px !important;" class="text-center whitespace-nowrap">
+                                            @if($row['bill_date'] !== '-')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                                                    {{ $row['bill_date'] }}
+                                                </span>
                                             @else
-                                                <span style="color: #f43f5e;">-</span>
+                                                <span class="text-gray-400 font-medium">-</span>
                                             @endif
                                         </td>
-                                        
-                                        <!-- Credit (Cr) -->
-                                        <td style="padding: 16px 20px !important;" class="text-right font-medium whitespace-nowrap">
-                                            @if($row['credit'] !== null)
-                                                <span style="color: #f43f5e; font-weight: 600;">{{ number_format($row['credit'], 2) }}</span>
+
+                                        <!-- Bill Amount -->
+                                        <td style="padding: 14px 16px !important;" class="text-right font-medium whitespace-nowrap">
+                                            @if($row['bill_amount'] !== null)
+                                                <span class="font-semibold text-gray-900">Rs. {{ number_format($row['bill_amount'], 2) }}</span>
                                             @else
-                                                <span style="color: #f43f5e;">-</span>
+                                                <span class="text-gray-400">-</span>
                                             @endif
                                         </td>
-                                        
-                                        <!-- Balance -->
-                                        <td style="padding: 16px 20px !important;" class="text-right font-semibold text-gray-900 whitespace-nowrap">
-                                            {{ number_format(abs($row['balance']), 2) }} 
-                                            <span class="text-xs font-normal text-gray-500">{{ $row['balance'] >= 0 ? 'Dr' : 'Cr' }}</span>
+
+                                        <!-- Received Date -->
+                                        <td style="padding: 14px 16px !important;" class="text-center whitespace-nowrap">
+                                            @if($row['received_date'] !== '-')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    {{ $row['received_date'] }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-400 font-medium">-</span>
+                                            @endif
+                                        </td>
+
+                                        <!-- Received Amount -->
+                                        <td style="padding: 14px 16px !important;" class="text-right font-medium whitespace-nowrap">
+                                            @if($row['received_amount'] !== null)
+                                                <span class="font-semibold text-emerald-600">Rs. {{ number_format($row['received_amount'], 2) }}</span>
+                                            @else
+                                                <span class="text-gray-400">-</span>
+                                            @endif
+                                        </td>
+
+                                        <!-- Outstanding Balance -->
+                                        <td style="padding: 14px 16px !important;" class="text-right font-bold text-gray-900 whitespace-nowrap">
+                                            Rs. {{ number_format(abs($row['balance']), 2) }} 
+                                            <span class="text-xs font-semibold {{ $row['balance'] >= 0 ? 'text-red-500' : 'text-emerald-500' }}">{{ $row['balance'] >= 0 ? 'Dr' : 'Cr' }}</span>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="px-6 py-12 text-center text-gray-400 font-medium">
+                                        <td colspan="8" class="px-6 py-12 text-center text-gray-400 font-medium">
                                             <svg class="mx-auto h-12 w-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                            No receipt vouchers found for this customer in selected period.
+                                            No bills or receipts found for this customer in selected period.
                                         </td>
                                     </tr>
                                 @endforelse
                             @endif
                         </tbody>
+                        @if($selectedCustomer && count($transactions) > 0)
+                            <tfoot class="bg-gray-100 font-bold text-gray-900 border-t-2 border-gray-300">
+                                <tr>
+                                    <td colspan="4" style="padding: 14px 16px !important;" class="text-right uppercase tracking-wider text-xs text-gray-600">Total:</td>
+                                    <td style="padding: 14px 16px !important;" class="text-right text-gray-900 font-bold">Rs. {{ number_format($totalBilled, 2) }}</td>
+                                    <td></td>
+                                    <td style="padding: 14px 16px !important;" class="text-right text-emerald-600 font-bold">Rs. {{ number_format($totalReceived, 2) }}</td>
+                                    <td style="padding: 14px 16px !important;" class="text-right font-bold text-gray-900">
+                                        Rs. {{ number_format(abs($finalOutstanding), 2) }} 
+                                        <span class="text-xs font-semibold {{ $finalOutstanding >= 0 ? 'text-red-500' : 'text-emerald-500' }}">{{ $finalOutstanding >= 0 ? 'Dr' : 'Cr' }}</span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        @endif
                     </table>
                 </div>
             </div>

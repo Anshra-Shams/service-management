@@ -88,30 +88,56 @@ Route::middleware('auth')->group(function () {
     })->name('create-bill');
 
     Route::get('/add-bill', function () {
-        $customers = \App\Models\Customer::all();
+        $customers = \App\Models\Customer::with('services')->get();
         $services = \App\Models\Service::all();
         return view('add-bill', compact('customers', 'services'));
     })->name('add-bill');
     
     Route::post('/generate-bill', function (Illuminate\Http\Request $request) {
-        $serviceIds = $request->input('service_ids');
-        if (empty($serviceIds) && $request->filled('service_id')) {
-            $serviceIds = (array) $request->service_id;
+        $serviceNames = $request->input('service_names');
+        if (empty($serviceNames)) {
+            $serviceNames = $request->input('service_ids') ?? $request->input('services') ?? [];
         }
-        $request->merge(['service_ids' => $serviceIds]);
 
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'service_ids' => 'required|array|min:1',
-            'service_ids.*' => 'exists:services,id',
             'service_date' => 'required|date',
             'due_date' => 'nullable|date',
             'amount' => 'required|numeric'
         ]);
 
+        $serviceRecords = [];
+        $firstServiceId = null;
+
+        if (!empty($serviceNames) && is_array($serviceNames)) {
+            foreach ($serviceNames as $index => $nameOrId) {
+                $nameStr = trim((string)$nameOrId);
+                if ($nameStr === '') continue;
+
+                if (is_numeric($nameStr) && \App\Models\Service::find($nameStr)) {
+                    $service = \App\Models\Service::find($nameStr);
+                } else {
+                    $service = \App\Models\Service::firstOrCreate(['name' => $nameStr]);
+                }
+
+                if (!$firstServiceId) {
+                    $firstServiceId = $service->id;
+                }
+
+                $serviceRecords[$service->id] = [
+                    'amount' => $request->total_amount[$index] ?? 0,
+                    'monthly_charges' => $request->monthly_charges[$index] ?? 0,
+                    'arrears' => $request->arrears[$index] ?? 0,
+                    'late_surcharge' => $request->late_payment_surcharge[$index] ?? 0,
+                    'total_bills' => $request->total_amount[$index] ?? 0,
+                    'total_payable' => $request->total_payable[$index] ?? 0,
+                ];
+            }
+        }
+
         $invoice = \App\Models\Invoice::create([
             'customer_id' => $request->customer_id,
-            'service_id' => $serviceIds[0] ?? null,
+            'service_id' => $firstServiceId,
             'service_date' => $request->service_date,
             'due_date' => $request->due_date,
             'amount' => $request->amount,
@@ -119,18 +145,9 @@ Route::middleware('auth')->group(function () {
             'type' => $request->type
         ]);
 
-        $serviceRecords = [];
-        foreach ($serviceIds as $index => $svcId) {
-            $serviceRecords[$svcId] = [
-                'amount' => $request->total_amount[$index] ?? 0,
-                'monthly_charges' => $request->monthly_charges[$index] ?? 0,
-                'arrears' => $request->arrears[$index] ?? 0,
-                'late_surcharge' => $request->late_payment_surcharge[$index] ?? 0,
-                'total_bills' => $request->total_amount[$index] ?? 0,
-                'total_payable' => $request->total_payable[$index] ?? 0,
-            ];
+        if (!empty($serviceRecords)) {
+            $invoice->services()->sync($serviceRecords);
         }
-        $invoice->services()->sync($serviceRecords);
         
         return redirect()->route('invoice.show', $invoice->id)->with('success', 'Bill generated successfully!');
     })->name('generate-bill');
@@ -156,25 +173,51 @@ Route::middleware('auth')->group(function () {
     })->name('invoice.edit');
 
     Route::put('/invoice/{id}', function (Illuminate\Http\Request $request, $id) {
-        $serviceIds = $request->input('service_ids');
-        if (empty($serviceIds) && $request->filled('service_id')) {
-            $serviceIds = (array) $request->service_id;
+        $serviceNames = $request->input('service_names');
+        if (empty($serviceNames)) {
+            $serviceNames = $request->input('service_ids') ?? $request->input('services') ?? [];
         }
-        $request->merge(['service_ids' => $serviceIds]);
 
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
-            'service_ids' => 'required|array|min:1',
-            'service_ids.*' => 'exists:services,id',
             'service_date' => 'required|date',
             'due_date' => 'nullable|date',
             'amount' => 'required|numeric'
         ]);
 
+        $serviceRecords = [];
+        $firstServiceId = null;
+
+        if (!empty($serviceNames) && is_array($serviceNames)) {
+            foreach ($serviceNames as $index => $nameOrId) {
+                $nameStr = trim((string)$nameOrId);
+                if ($nameStr === '') continue;
+
+                if (is_numeric($nameStr) && \App\Models\Service::find($nameStr)) {
+                    $service = \App\Models\Service::find($nameStr);
+                } else {
+                    $service = \App\Models\Service::firstOrCreate(['name' => $nameStr]);
+                }
+
+                if (!$firstServiceId) {
+                    $firstServiceId = $service->id;
+                }
+
+                $serviceRecords[$service->id] = [
+                    'amount' => $request->total_amount[$index] ?? ($service->amount ?? 0),
+                    'monthly_charges' => $request->monthly_charges[$index] ?? 0,
+                    'arrears' => $request->arrears[$index] ?? 0,
+                    'late_surcharge' => $request->late_payment_surcharge[$index] ?? 0,
+                    'total_bills' => $request->total_amount[$index] ?? 0,
+                    'total_payable' => $request->total_payable[$index] ?? 0,
+                ];
+            }
+        }
+
         $invoice = \App\Models\Invoice::findOrFail($id);
         $invoice->update([
             'customer_id' => $request->customer_id,
-            'service_id' => $serviceIds[0] ?? null,
+            'service_id' => $firstServiceId,
             'service_date' => $request->service_date,
             'due_date' => $request->due_date,
             'amount' => $request->amount,
@@ -182,11 +225,6 @@ Route::middleware('auth')->group(function () {
             'type' => $request->type
         ]);
 
-        $serviceRecords = [];
-        $selectedServices = \App\Models\Service::whereIn('id', $serviceIds)->get();
-        foreach ($selectedServices as $svc) {
-            $serviceRecords[$svc->id] = ['amount' => $svc->amount];
-        }
         $invoice->services()->sync($serviceRecords);
 
         return redirect()->route('create-bill')->with('success', 'Invoice updated successfully!');

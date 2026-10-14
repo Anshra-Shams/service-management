@@ -28,18 +28,31 @@ class ServiceController extends Controller
             'name' => 'required|string|max:255',
             'details' => 'nullable|array',
             'details.*.amount' => 'nullable|numeric',
+            'details.*.service' => 'nullable|string|max:255',
             'details.*.marla' => 'nullable|string|max:255',
         ]);
         
+        $cleanDetails = [];
+        if (!empty($request->details) && is_array($request->details)) {
+            foreach ($request->details as $d) {
+                $serviceName = trim($d['service'] ?? $d['marla'] ?? '');
+                $amount = $d['amount'] ?? null;
+                if ($serviceName !== '' || ($amount !== null && $amount !== '')) {
+                    $cleanDetails[] = [
+                        'service' => $serviceName,
+                        'marla' => $serviceName,
+                        'amount' => $amount,
+                    ];
+                }
+            }
+        }
+
         $serviceData = [
             'name' => $request->name,
-            'details' => $request->details ?? [],
+            'details' => $cleanDetails,
+            'amount' => $cleanDetails[0]['amount'] ?? null,
+            'marla' => $cleanDetails[0]['service'] ?? null,
         ];
-        
-        if (!empty($request->details) && count($request->details) > 0) {
-            $serviceData['amount'] = $request->details[0]['amount'] ?? null;
-            $serviceData['marla'] = $request->details[0]['marla'] ?? null;
-        }
 
         Service::create($serviceData);
         return redirect()->back()->with('success', 'Category added successfully.');
@@ -51,21 +64,31 @@ class ServiceController extends Controller
             'name' => 'required|string|max:255',
             'details' => 'nullable|array',
             'details.*.amount' => 'nullable|numeric',
+            'details.*.service' => 'nullable|string|max:255',
             'details.*.marla' => 'nullable|string|max:255',
         ]);
         
+        $cleanDetails = [];
+        if (!empty($request->details) && is_array($request->details)) {
+            foreach ($request->details as $d) {
+                $serviceName = trim($d['service'] ?? $d['marla'] ?? '');
+                $amount = $d['amount'] ?? null;
+                if ($serviceName !== '' || ($amount !== null && $amount !== '')) {
+                    $cleanDetails[] = [
+                        'service' => $serviceName,
+                        'marla' => $serviceName,
+                        'amount' => $amount,
+                    ];
+                }
+            }
+        }
+
         $serviceData = [
             'name' => $request->name,
-            'details' => $request->details ?? [],
+            'details' => $cleanDetails,
+            'amount' => $cleanDetails[0]['amount'] ?? null,
+            'marla' => $cleanDetails[0]['service'] ?? null,
         ];
-        
-        if (!empty($request->details) && count($request->details) > 0) {
-            $serviceData['amount'] = $request->details[0]['amount'] ?? null;
-            $serviceData['marla'] = $request->details[0]['marla'] ?? null;
-        } else {
-            $serviceData['amount'] = null;
-            $serviceData['marla'] = null;
-        }
 
         $service->update($serviceData);
         return redirect()->back()->with('success', 'Category updated successfully.');

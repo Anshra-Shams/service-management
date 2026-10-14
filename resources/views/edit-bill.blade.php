@@ -99,6 +99,19 @@
             border-radius: 0.375rem !important;
             border-color: #d1d5db !important;
         }
+        input[type="text"]::-webkit-calendar-picker-indicator {
+            display: none !important;
+            -webkit-appearance: none;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.7;
+            padding: 2px;
+            transition: opacity 0.2s;
+        }
+        input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
     </style>
 
     <div class="py-4 bg-gray-50/50 min-h-screen">
@@ -121,40 +134,44 @@
                         @csrf
                         @method('PUT')
                         
-                        <div class="grid gap-4 mb-6" style="grid-template-columns: repeat(4, minmax(0, 1fr));">
+                        <div class="grid gap-4 mb-6" style="grid-template-columns: repeat(5, minmax(0, 1fr));">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Customer</label>
                                 <select name="customer_id" class="searchable-select w-full" data-placeholder="Select a customer..." required>
                                     <option value=""></option>
                                     @foreach($customers as $customer)
-                                        <option value="{{ $customer->id }}" {{ $invoice->customer_id == $customer->id ? 'selected' : '' }}>{{ $customer->name }} - (Balance: Rs. {{ number_format($customer->opening_balance, 2) }})</option>
+                                        <option value="{{ $customer->id }}" data-category="{{ $customer->plot_size ?? '' }}" data-type="{{ $customer->type ?? '' }}" {{ $invoice->customer_id == $customer->id ? 'selected' : '' }}>{{ $customer->name }}{{ $customer->plot_size ? ' (' . $customer->plot_size . ')' : '' }} - (Balance: Rs. {{ number_format($customer->opening_balance, 2) }})</option>
                                     @endforeach
                                 </select>
                             </div>
                             <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                                <input type="text" name="category" autocomplete="off" value="{{ $invoice->category ?? ($invoice->customer->plot_size ?? '') }}" placeholder="Enter category..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3">
+                            </div>
+                            <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Type</label>
-                                <input type="text" name="type" value="{{ $invoice->type }}" placeholder="Enter type..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3">
+                                <input type="text" name="type" placeholder="Enter type..." class="block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Issue Date</label>
-                                <div class="relative">
+                                <div class="relative cursor-pointer" onclick="const el = document.getElementById('issue_date_input'); if (el && el.showPicker) el.showPicker();">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2-0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
                                     </div>
-                                    <input type="date" name="service_date" id="issue_date_input" value="{{ $invoice->service_date }}" value="{{ date('Y-m-d') }}" class="pl-10 block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2" required>
+                                    <input type="date" name="service_date" id="issue_date_input" value="{{ $invoice->service_date ? date('Y-m-d', strtotime($invoice->service_date)) : date('Y-m-d') }}" class="pl-10 pr-3 block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 cursor-pointer" onclick="if(this.showPicker) this.showPicker()" required>
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
-                                <div class="relative">
+                                <div class="relative cursor-pointer" onclick="const el = document.getElementById('due_date_input'); if (el && el.showPicker) el.showPicker();">
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </div>
-                                    <input type="date" name="due_date" id="due_date_input" value="{{ $invoice->due_date }}" class="pl-10 block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2" required>
+                                    <input type="date" name="due_date" id="due_date_input" value="{{ $invoice->due_date ? date('Y-m-d', strtotime($invoice->due_date)) : '' }}" class="pl-10 pr-3 block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 cursor-pointer" onclick="if(this.showPicker) this.showPicker()" required>
                                 </div>
                             </div>
                         </div>
@@ -172,13 +189,12 @@
                             <table class="min-w-full divide-y divide-gray-200">
                                 <thead class="bg-gray-50">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 20%; min-width: 150px;">Category</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%; min-width: 100px;">Marla</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Monthly Charges</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Arrears</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Late Surcharge</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Total Bills</th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%; min-width: 130px;">Total Payable</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 25%; min-width: 180px;">Service</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%; min-width: 130px;">Monthly Charges</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%; min-width: 130px;">Arrears</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%; min-width: 130px;">Late Surcharge</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%; min-width: 130px;">Total Bills</th>
+                                        <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%; min-width: 130px;">Total Payable</th>
                                         <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 5%; min-width: 60px;">Action</th>
                                     </tr>
                                 </thead>
@@ -190,33 +206,7 @@
                                     @foreach($servicesList as $s)
                                     <tr class="invoice-row">
                                         <td class="px-4 py-3">
-                                            <select name="service_ids[]" class="service-select w-full" data-placeholder="Select category..." required>
-                                                <option value=""></option>
-                                                @foreach($services as $srv)
-                                                    <option value="{{ $srv->id }}" data-amount="{{ $srv->amount ?? 0 }}" data-details="{{ json_encode($srv->details ?? []) }}" {{ ($s && $srv->id == $s->id) ? 'selected' : '' }}>
-                                                        {{ $srv->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td class="px-4 py-3">
-                                            <select name="marla[]" class="marla-select w-full" data-placeholder="Select marla...">
-                                                <option value=""></option>
-                                                @php
-                                                    $details = null;
-                                                    if ($s) {
-                                                        $details = is_string($s->details) ? json_decode($s->details, true) : $s->details;
-                                                    }
-                                                @endphp
-                                                @if(!empty($details) && is_array($details))
-                                                    @foreach($details as $item)
-                                                        @php $item = (array) $item; @endphp
-                                                        <option value="{{ $item['marla'] }}" data-amount="{{ $item['amount'] }}" {{ (isset($s->pivot->monthly_charges) && $s->pivot->monthly_charges == $item['amount']) ? 'selected' : '' }}>
-                                                            {{ $item['marla'] }}
-                                                        </option>
-                                                    @endforeach
-                                                @endif
-                                            </select>
+                                            <input type="text" name="service_names[]" value="{{ $s->name ?? '' }}" autocomplete="off" class="service-name-input block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2 px-3" placeholder="Enter service..." required>
                                         </td>
                                         <td class="px-4 py-3">
                                             <input type="number" name="monthly_charges[]" value="{{ $s->pivot->monthly_charges ?? $s->amount ?? 0 }}" placeholder="0.00" step="0.01" class="monthly-charges block w-full bg-gray-50 border-gray-200 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm py-2">
@@ -246,7 +236,7 @@
 
                                 <tfoot class="bg-gray-100 font-semibold text-gray-800 border-t border-gray-200">
                                     <tr>
-                                        <td class="px-4 py-3 text-right" colspan="2">GRID TOTAL:</td>
+                                        <td class="px-4 py-3 text-right">GRID TOTAL:</td>
                                         <td class="px-4 py-3">Rs. <span id="grid_total_monthly">0.00</span></td>
                                         <td class="px-4 py-3"></td>
                                         <td class="px-4 py-3"></td>
@@ -291,50 +281,78 @@
             $('.searchable-select').each(function() {
                 initSelect2($(this));
             });
-            $('.service-select').each(function() {
-                initSelect2($(this));
-            });
-            $('.marla-select').each(function() {
-                initSelect2($(this));
-            });
 
-            $(document).on('change', '.service-select', function() {
-                let row = $(this).closest('tr');
-                let selectedOption = $(this).find('option:selected');
-                let detailsStr = selectedOption.attr('data-details');
-                let defaultAmount = parseFloat(selectedOption.attr('data-amount')) || 0;
+            const categoriesData = @json($services);
+
+            function renderInvoiceRows(servicesList) {
+                if (!servicesList || servicesList.length === 0) return;
                 
-                let details = [];
-                try {
-                    details = JSON.parse(detailsStr);
-                } catch(e) {}
+                let templateRow = $('#invoice_tbody tr.invoice-row:first').clone();
+                $('#invoice_tbody').empty();
                 
-                let marlaSelect = row.find('.marla-select');
-                marlaSelect.empty();
-                marlaSelect.append('<option value=""></option>');
+                servicesList.forEach(function(svc) {
+                    let row = templateRow.clone();
+                    row.find('.service-name-input').val(svc.name || '');
+                    let rowAmount = (svc.amount !== undefined && svc.amount !== null && svc.amount !== '') ? parseFloat(svc.amount) : 0;
+                    row.find('.monthly-charges').val(rowAmount ? rowAmount.toFixed(2) : '0.00');
+                    row.find('.arrears').val('0.00');
+                    row.find('.late-surcharge').val('0.00');
+                    row.find('.total-amount').val(rowAmount ? rowAmount.toFixed(2) : '0.00');
+                    row.find('.total-payable').val(rowAmount ? rowAmount.toFixed(2) : '0.00');
+                    $('#invoice_tbody').append(row);
+                });
                 
-                if (details && details.length > 0) {
-                    details.forEach(function(item) {
-                        marlaSelect.append('<option value="' + item.marla + '" data-amount="' + item.amount + '">' + item.marla + '</option>');
+                calculateGrandTotal();
+            }
+
+            function populateServicesForCategory(categoryName) {
+                if (!categoryName) return false;
+                let cleanCatName = categoryName.trim().toLowerCase();
+                
+                let matchedCat = categoriesData.find(c => c.name && c.name.trim().toLowerCase() === cleanCatName);
+                if (!matchedCat) return false;
+                
+                let servicesList = [];
+                if (Array.isArray(matchedCat.details) && matchedCat.details.length > 0) {
+                    matchedCat.details.forEach(item => {
+                        let sName = (item.service || item.marla || '').trim();
+                        let amt = (item.amount !== undefined && item.amount !== null && item.amount !== '') ? parseFloat(item.amount) : 0;
+                        if (sName !== '' || amt > 0) {
+                            servicesList.push({ name: sName, amount: amt });
+                        }
                     });
-                    row.find('.monthly-charges').val('').trigger('input');
-                } else {
-                    row.find('.monthly-charges').val(defaultAmount.toFixed(2)).trigger('input');
+                } else if (matchedCat.amount || matchedCat.marla) {
+                    servicesList.push({
+                        name: matchedCat.marla || matchedCat.name || '',
+                        amount: parseFloat(matchedCat.amount) || 0
+                    });
                 }
-            });
-
-            $(document).on('change', '.marla-select', function() {
-                let row = $(this).closest('tr');
-                let selectedOption = $(this).find('option:selected');
-                let amount = parseFloat(selectedOption.attr('data-amount')) || 0;
                 
-                if ($(this).val()) {
-                    row.find('.monthly-charges').val(amount.toFixed(2)).trigger('input');
-                } else {
-                    row.find('.monthly-charges').val('').trigger('input');
+                if (servicesList.length === 0) return false;
+                
+                renderInvoiceRows(servicesList);
+                return true;
+            }
+
+            $('select[name="customer_id"]').on('change', function() {
+                let selectedCustOption = $(this).find('option:selected');
+                let custCategory = selectedCustOption.attr('data-category') || '';
+                let custType = selectedCustOption.attr('data-type') || '';
+                
+                $('input[name="category"]').val(custCategory);
+                $('input[name="type"]').val(custType);
+
+                if (custCategory) {
+                    populateServicesForCategory(custCategory);
                 }
             });
 
+            $('input[name="category"]').on('change', function() {
+                let catVal = $(this).val();
+                if (catVal) {
+                    populateServicesForCategory(catVal);
+                }
+            });
             function setDueDateFromIssue(issueVal) {
                 setTimeout(calculateGrandTotal, 100);
                 if (!issueVal) return;
@@ -392,8 +410,6 @@
                 $('#grand_amount').val(grandPayable.toFixed(2));
             }
 
-
-
             $(document).on('input change', '.total-amount, .monthly-charges, .arrears, .late-surcharge', function() {
                 let row = $(this).closest('tr');
                 calculateRowTotal(row);
@@ -406,16 +422,8 @@
             $('#add_row_btn').on('click', function() {
                 let firstRow = $('#invoice_tbody tr.invoice-row:first');
                 let newRow = firstRow.clone();
-                
                 newRow.find('input').val('');
-                newRow.find('select').val('');
-                newRow.find('.select2-container').remove();
-                newRow.find('select').removeClass('select2-hidden-accessible').removeAttr('data-select2-id tabindex aria-hidden');
-                newRow.find('option').removeAttr('data-select2-id');
-                
                 $('#invoice_tbody').append(newRow);
-                initSelect2(newRow.find('.service-select'));
-                initSelect2(newRow.find('.marla-select'));
             });
 
             // Prevent form submit on Enter and add new row instead if inside table
