@@ -24,7 +24,7 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     $totalCustomers = \App\Models\Customer::count();
-    $totalServices = \App\Models\Service::count();
+    $totalServices = \App\Models\Service::where('is_category', true)->count();
     $totalBills = \App\Models\Invoice::count();
     $recentBills = \App\Models\Invoice::with('customer')->latest()->take(5)->get();
     return view('dashboard', compact('totalCustomers', 'totalServices', 'totalBills', 'recentBills'));
@@ -53,7 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::delete('/receipt/{receipt}', [\App\Http\Controllers\ReceiptController::class, 'destroy'])->name('receipt.destroy');
     Route::get('/create-bill', function (Illuminate\Http\Request $request) {
         $customers = \App\Models\Customer::all();
-        $services = \App\Models\Service::all();
+        $services = \App\Models\Service::where('is_category', true)->get();
         
         $query = \App\Models\Invoice::with(['customer', 'services', 'service']);
         
@@ -89,7 +89,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/add-bill', function () {
         $customers = \App\Models\Customer::with('services')->get();
-        $services = \App\Models\Service::all();
+        $services = \App\Models\Service::where('is_category', true)->get();
         return view('add-bill', compact('customers', 'services'));
     })->name('add-bill');
     
@@ -117,7 +117,7 @@ Route::middleware('auth')->group(function () {
                 if (is_numeric($nameStr) && \App\Models\Service::find($nameStr)) {
                     $service = \App\Models\Service::find($nameStr);
                 } else {
-                    $service = \App\Models\Service::firstOrCreate(['name' => $nameStr]);
+                    $service = \App\Models\Service::firstOrCreate(['name' => $nameStr], ['is_category' => false, 'amount' => 0]);
                 }
 
                 if (!$firstServiceId) {
@@ -168,7 +168,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/invoice/{id}/edit', function ($id) {
         $invoice = \App\Models\Invoice::with('services')->findOrFail($id);
         $customers = \App\Models\Customer::all();
-        $services = \App\Models\Service::all();
+        $services = \App\Models\Service::where('is_category', true)->get();
         return view('edit-bill', compact('invoice', 'customers', 'services'));
     })->name('invoice.edit');
 
@@ -196,7 +196,7 @@ Route::middleware('auth')->group(function () {
                 if (is_numeric($nameStr) && \App\Models\Service::find($nameStr)) {
                     $service = \App\Models\Service::find($nameStr);
                 } else {
-                    $service = \App\Models\Service::firstOrCreate(['name' => $nameStr]);
+                    $service = \App\Models\Service::firstOrCreate(['name' => $nameStr], ['is_category' => false, 'amount' => 0]);
                 }
 
                 if (!$firstServiceId) {

@@ -9,12 +9,14 @@ class ServiceController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Service::latest();
+        $query = Service::where('is_category', true)->latest();
         
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where('name', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
                   ->orWhere('id', 'like', "%{$search}%");
+            });
         }
 
         $perPage = $request->input('per_page', 10);
@@ -52,6 +54,7 @@ class ServiceController extends Controller
             'details' => $cleanDetails,
             'amount' => $cleanDetails[0]['amount'] ?? null,
             'marla' => $cleanDetails[0]['service'] ?? null,
+            'is_category' => true,
         ];
 
         Service::create($serviceData);
@@ -88,6 +91,7 @@ class ServiceController extends Controller
             'details' => $cleanDetails,
             'amount' => $cleanDetails[0]['amount'] ?? null,
             'marla' => $cleanDetails[0]['service'] ?? null,
+            'is_category' => true,
         ];
 
         $service->update($serviceData);

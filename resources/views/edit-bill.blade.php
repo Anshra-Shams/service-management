@@ -305,11 +305,54 @@
                 calculateGrandTotal();
             }
 
+            function normalizeCategoryStr(str) {
+                if (!str) return '';
+                return str.toString()
+                    .toLowerCase()
+                    .replace(/marhala|marhle|marla|marle|marlay/g, 'marla')
+                    .replace(/[^a-z0-9]/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+
+            function findCategoryMatch(categoryName) {
+                if (!categoryName) return null;
+                let trimmed = categoryName.trim().toLowerCase();
+                let norm = normalizeCategoryStr(categoryName);
+                
+                // 1. Exact case-insensitive match
+                let match = categoriesData.find(c => c.name && c.name.trim().toLowerCase() === trimmed);
+                if (match) return match;
+                
+                // 2. Normalized match (e.g. "200 marla" matches "200 marle")
+                match = categoriesData.find(c => c.name && normalizeCategoryStr(c.name) === norm);
+                if (match) return match;
+                
+                // 3. Substring / contains match
+                match = categoriesData.find(c => {
+                    let cNorm = normalizeCategoryStr(c.name || '');
+                    return cNorm && (norm.includes(cNorm) || cNorm.includes(norm));
+                });
+                if (match) return match;
+                
+                // 4. Numeric match if digits exist (e.g. "200" matches "200 marle")
+                let digits = categoryName.match(/\d+/);
+                if (digits) {
+                    let num = digits[0];
+                    match = categoriesData.find(c => {
+                        let cDigits = (c.name || '').match(/\d+/);
+                        return cDigits && cDigits[0] === num;
+                    });
+                    if (match) return match;
+                }
+                
+                return null;
+            }
+
             function populateServicesForCategory(categoryName) {
                 if (!categoryName) return false;
-                let cleanCatName = categoryName.trim().toLowerCase();
                 
-                let matchedCat = categoriesData.find(c => c.name && c.name.trim().toLowerCase() === cleanCatName);
+                let matchedCat = findCategoryMatch(categoryName);
                 if (!matchedCat) return false;
                 
                 let servicesList = [];
@@ -347,9 +390,9 @@
                 }
             });
 
-            $('input[name="category"]').on('change', function() {
+            $('input[name="category"]').on('input change', function() {
                 let catVal = $(this).val();
-                if (catVal) {
+                if (catVal && catVal.trim().length >= 1) {
                     populateServicesForCategory(catVal);
                 }
             });

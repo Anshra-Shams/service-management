@@ -28,7 +28,7 @@ class CustomerController extends Controller
         
         $perPage = $request->input('per_page', 10);
         $customers = $query->paginate($perPage)->appends($request->query());
-        $services = Service::all();
+        $services = Service::where('is_category', true)->get();
 
         $suggestedPlotSizes = collect();
         foreach ($services as $svc) {
